@@ -6,7 +6,8 @@ from functools import wraps
 from sqlalchemy import or_
 
 from psiturk.psiturk_config import PsiturkConfig
-from psiturk.experiment_errors import ExperimentError, InvalidUsageError
+from psiturk.experiment_errors import ExperimentError
+#  , InvalidUsageError # removed causing error in heroku
 from psiturk.user_utils import PsiTurkAuthorization, nocache
 
 # # Database setup
