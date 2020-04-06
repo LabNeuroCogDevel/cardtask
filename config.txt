@@ -21,7 +21,8 @@ table_name = cardturk
 [Server Parameters]
 host = 0.0.0.0
 threads = 1
-port = 22362
+port = 80
+#port = 22362
 cutoff_time = 30
 logfile = server.log
 loglevel = 2
