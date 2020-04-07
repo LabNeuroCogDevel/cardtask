@@ -1,4 +1,3 @@
-
 body {
     padding:0px;
     margin: 0px;
@@ -7,6 +6,32 @@ body {
     font-weight: 300; 
     font-size: 13pt;
 }
+
+.twocards {
+   display: block;
+   width: 80%;
+   min-height: 220px;
+   min-width: 200px;
+}
+.card-container{ display: inline-block;}
+.card {
+   display: inline-flex;
+   justify-content: center;
+   text-align: center;
+   width: 40%;
+   min-width: 90px;
+   min-height: 200px;
+   margin: 5px;
+   border: 2px solid black;
+   border-radius: 20px;
+   align-items: center;
+   font-size: 30px;
+   color: white;
+}
+.blue { background-color: #4371C3; }
+.red { background-color: red; }
+.left { align: left;}
+.right { align: right;}
 
 
 /* text styling */
