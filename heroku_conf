@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
-conf="$HOME/.psiturkconfig" 
-! test -r $conf && echo "missing $_" && exit 1
-! command -v heroku >/dev/null && echo "missing heroku-cli" && exit 1
+psiturk-heroku-config
 
-id=$(perl -lne 'print $1 if m/^aws_access_key_id =\s*(\S+)/'  $conf) 
-s=$(perl -lne 'print $1 if m/^aws_secret_access_key =\s*(\S+)/' $conf) 
-[ -z "$id" -o -z "$s" ] && echo "bad 'aws_access_key_id =' and/or 'aws_secret_access_key =' in $conf"  && exit 1
-
-heroku config:set ON_HEROKU=true
-heroku config:set "aws_access_key_id=$id"
-heroku config:set "aws_secret_access_key=$s"
-heroku config:set DATABASE_URL=sqlite:///participants.db
-
-#heroku config:set psiturk_access_key_id=<XYZ>
-#heroku config:set psiturk_secret_access_id=<XYZ>
+# conf="$HOME/.psiturkconfig"
+# ! test -r $conf && echo "missing $_" && exit 1
+# ! command -v heroku >/dev/null && echo "missing heroku-cli" && exit 1
+#
+# id=$(perl -lne 'print $1 if m/^aws_access_key_id =\s*(\S+)/'  $conf)
+# s=$(perl -lne 'print $1 if m/^aws_secret_access_key =\s*(\S+)/' $conf)
+# [ -z "$id" -o -z "$s" ] && echo "bad 'aws_access_key_id =' and/or 'aws_secret_access_key =' in $conf"  && exit 1
+#
+# heroku config:set ON_HEROKU=true
+# heroku config:set "aws_access_key_id=$id"
+# heroku config:set "aws_secret_access_key=$s"
+# heroku config:set DATABASE_URL=sqlite:///participants.db
+#
+# #heroku config:set psiturk_access_key_id=<XYZ>
+# #heroku config:set psiturk_secret_access_id=<XYZ>
