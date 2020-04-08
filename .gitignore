@@ -3,3 +3,4 @@ participants.db
 server.log
 __pycache__
 static/js/jspsych/examples/
+*csv

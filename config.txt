@@ -21,8 +21,9 @@ table_name = cardturk
 [Server Parameters]
 host = 0.0.0.0
 threads = 1
-port = 80
-#port = 22362
+# heroku dynamically assigns your app a port, so you can't set the
+# port to a fixed number database url is also dynamic
+port = 22362
 cutoff_time = 30
 logfile = server.log
 loglevel = 2
