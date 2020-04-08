@@ -1,4 +1,4 @@
-const DEBUG = 1; // change 1=>0
+const DEBUG = 0; // change 1=>0
 // starting value
 const INITPOINTS=200;
 // make block
@@ -34,6 +34,7 @@ class Card {
            right.html('right')+
            '</div>')
   }
+  // 20200408 - no longer used, was for feeback
   fade(){
       $('#card-' +this.sym).fadeTo(100, .1)
   }
@@ -42,16 +43,16 @@ class Card {
 // initialize cards. probablility will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2': new Card('✿', 'blue', 10 , 10 , .2),
-  'p28_8': new Card('❖', 'blue', 10 , 10 , .8),
+  'p28_2': new Card('✿', 'blue', 10 , 500, .2),
+  'p28_8': new Card('❖', 'blue', 10 , 500, .8),
   'p28_1': new Card('✢', 'red' , 100, 500, 1),
    // phase 2 80/20/100
-  'p82_8': new Card('✿', 'blue', 10 , 10 , .8),
-  'p82_2': new Card('❖', 'blue', 10 , 10 , .2),
+  'p82_8': new Card('✿', 'blue', 10 , 500, .8),
+  'p82_2': new Card('❖', 'blue', 10 , 500, .2),
   'p82_1': new Card('✢', 'red' , 100, 500, 1),
    // phase 3 100/100/100
-  'p11_x': new Card('✿', 'blue', 10 , 10 , 1),
-  'p11_y': new Card('❖', 'blue', 10 , 10 , 1),
+  'p11_x': new Card('✿', 'blue', 10 , 500, 1),
+  'p11_y': new Card('❖', 'blue', 10 , 500, 1),
   'p11_r': new Card('✢', 'red' , 100, 500, 1)
 };
 
@@ -110,26 +111,21 @@ function mktrial(l, r) {
 
 var feedback={
     type: 'html-keyboard-response',
-    stimulus: function(){
-	return(jsPsych.data.get().last(1).values()[0].stimulus) },
-    choices: jsPsych.NO_KEYS,
-    trial_duration: 700,
-    //choices: ['left arrow', 'right arrow', 'q'],
-    on_start: function(trial){
+    stimulus: function(trial){
 	// setup win vs nowin feedback color and message
 	var prev=jsPsych.data.get().last(1).values()[0]
-	var msg=(prev.win > 0)?("+"+prev.win):"no points";
+	var msg=(prev.win > 0)?("+"+prev.win):"0";
 	var color=(prev.win > 0)?"win":"nowin";
-	trial.prompt="<p class="+ color + ">" + msg +
-                    "</p><p> spent: " + prev.cost +"</p>" +
-		    (DEBUG?"&nbsp;":"")  // keep things aligned
+	var card = CARDS[prev.picked]
+	return(
+	  "<p class='feedback sym'>" + card.sym +"</p>" +
+	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
+	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+	  "<p class='feedback net "+color+"'>Net: " +
+		(prev.win - prev.cost) + "</p>")
     },
-    on_load: function(trial) {
-	// fade the card we did't choose
-	data = jsPsych.data.get().last(1).values()[0];
-	var card = CARDS[data.ignored]
-        card.fade()
-    },
+    choices: jsPsych.NO_KEYS,
+    trial_duration: 1000,
 }
 
 // TODO: figure out block structure
