@@ -56,6 +56,13 @@ const CARDS = {
   'p11_r': new Card('✢', 'red' , 100, 500, 1)
 };
 
+var get_info = {
+  type: 'survey-text',
+  questions: [
+    {prompt: "Your Name?", name: "name"}, 
+    {prompt: "Your Age?", placeholder: "25", name:"age"}
+  ],
+};
 
 var instructions = {       
     type: 'instructions',     
@@ -67,9 +74,11 @@ var instructions = {
     '<div>Blue cards cost 10 points.<br>' +
     'Red cards cost 100 points.<br>' +
     'Pay attention to the symbol on the card</div>',
+
+    '<div>Ready? <br>The task after this page</div>',
    
-    "Choices will look like: <br>" +
-     CARDS['p28_2'].add(CARDS['p28_8'])
+    //"Choices will look like: <br>" +
+    // CARDS['p28_2'].add(CARDS['p28_8'])
     ],        
     show_clickable_nav: true      
 }    
@@ -119,10 +128,10 @@ var feedback={
 	var card = CARDS[prev.picked]
 	return(
 	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
-	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
 	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>")
+		(prev.win - prev.cost) + "</p>" +
+	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
+	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" )
     },
     choices: jsPsych.NO_KEYS,
     trial_duration: 1000,
@@ -175,8 +184,8 @@ trials = trials.flatMap((k) => [k, feedback]);
 
 /* start the experiment */
 jsPsych.init({      
-   // instructions,
-   timeline: trials,
+   // 
+   timeline: [get_info, instructions, trials].flat(),
    on_finish: function() {
       psiturk.saveData({
          success: function() { psiturk.completeHIT(); }
