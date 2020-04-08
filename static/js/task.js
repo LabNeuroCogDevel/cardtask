@@ -80,13 +80,12 @@ function mktrial(l, r) {
     stimulus: CARDS[l].add(CARDS[r]),
     choices: [37, 39, 'q'],
     //choices: ['left arrow', 'right arrow', 'q'],
-    prompt: "<p>left or right " +
-	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"") +
-	  "<p>",
+    prompt: "<p>left or right</p>",
     on_start: function(trial) {
       prevscores=jsPsych.data.get().select('score').sum()
       cur_score = INITPOINTS + prevscores;
-      trial.prompt += '<p>You have ' + cur_score + ' points</p>';
+      trial.prompt += '<p>You have ' + cur_score + ' points</p>' +
+	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_finish: function(data){
       if(data.key_press == 81){
@@ -122,7 +121,8 @@ var feedback={
 	var msg=(prev.win > 0)?("+"+prev.win):"no points";
 	var color=(prev.win > 0)?"win":"nowin";
 	trial.prompt="<p class="+ color + ">" + msg +
-                    "</p><p> spent: " + prev.cost +"</p>";
+                    "</p><p> spent: " + prev.cost +"</p>" +
+		    (DEBUG?"&nbsp;":"")  // keep things aligned
     },
     on_load: function(trial) {
 	// fade the card we did't choose
