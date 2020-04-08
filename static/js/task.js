@@ -1,10 +1,10 @@
-const DEBUG = 1;
+const DEBUG = 1; // change 1=>0
 // starting value
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 20;
-const BLOCKJITTER = 20;       // Not implemented
-const CARDFREQ = [ .8, .2 ];  // low/high pair, any/red
+const BLOCKJITTER = 2;        // Not implemented
+const CARDFREQ = [.8, .2];  // low/high pair, any/red
 
 
 /* load psiturk */
@@ -119,7 +119,7 @@ var feedback={
     on_start: function(trial){
 	// setup win vs nowin feedback color and message
 	var prev=jsPsych.data.get().last(1).values()[0]
-	var msg=(prev.win > 0)?("+"+prev.win):"got nothing!";
+	var msg=(prev.win > 0)?("+"+prev.win):"no points";
 	var color=(prev.win > 0)?"win":"nowin";
 	trial.prompt="<p class="+ color + ">" + msg +
                     "</p><p> spent: " + prev.cost +"</p>";
@@ -140,29 +140,36 @@ function mkrep(l,r,n) {
 }
 
 // make each phase
-trials=[
- [].concat(
-  mkrep('p28_2','p28_8', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p28_8','p28_2', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p28_1','p28_2', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p28_2','p28_1', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p28_1','p28_8', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p28_8','p28_1', BLOCKLEN*CARDFREQ[1]/4)),
- [].concat(
-  mkrep('p82_2','p82_8', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p82_8','p82_2', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p82_1','p82_2', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p82_2','p82_1', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p82_1','p82_8', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p82_8','p82_1', BLOCKLEN*CARDFREQ[1]/4)),
- [].concat(
-  mkrep('p11_x','p11_y', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p11_y','p11_x', BLOCKLEN*CARDFREQ[0]/2),
-  mkrep('p11_r','p11_y', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p11_y','p11_r', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p11_r','p11_x', BLOCKLEN*CARDFREQ[1]/4),
-  mkrep('p11_x','p11_r', BLOCKLEN*CARDFREQ[1]/4)),
-].map( (a) => jsPsych.randomization.shuffle(a)).flat()
+var nlow = BLOCKLEN*CARDFREQ[0]/2;
+var nhigh = BLOCKLEN*CARDFREQ[1]/4;
+
+// blocks of 20/80, 80/20, and 100/100
+p28 = [].concat(
+  mkrep('p28_2','p28_8', nlow ),
+  mkrep('p28_8','p28_2', nlow ),
+  mkrep('p28_1','p28_2', nhigh),
+  mkrep('p28_2','p28_1', nhigh),
+  mkrep('p28_1','p28_8', nhigh),
+  mkrep('p28_8','p28_1', nhigh))
+p82 = [].concat(
+  mkrep('p82_2','p82_8', nlow ),
+  mkrep('p82_8','p82_2', nlow ),
+  mkrep('p82_1','p82_2', nhigh),
+  mkrep('p82_2','p82_1', nhigh),
+  mkrep('p82_1','p82_8', nhigh),
+  mkrep('p82_8','p82_1', nhigh))
+p11 = [].concat(
+  mkrep('p11_x','p11_y', nlow ),
+  mkrep('p11_y','p11_x', nlow ),
+  mkrep('p11_r','p11_y', nhigh),
+  mkrep('p11_y','p11_r', nhigh),
+  mkrep('p11_r','p11_x', nhigh),
+  mkrep('p11_x','p11_r', nhigh))
+
+// combine all
+trials=[p28, p82, p28, p82, p11].
+  map( (a) => jsPsych.
+  randomization.shuffle(a)).flat()
 
 // show all left chards
 if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
