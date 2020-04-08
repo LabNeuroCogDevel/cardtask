@@ -134,7 +134,7 @@ var feedback={
 	var card = CARDS[prev.picked]
 	return(
 	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
+	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
 	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
 	  "<p class='feedback net "+color+"'>Net: " +
 		(prev.win - prev.cost) + "</p>"+
