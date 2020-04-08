@@ -1,3 +1,12 @@
+const DEBUG = 1;
+// starting value
+const INITPOINTS=200;
+// make block
+const BLOCKLEN = 20;
+const BLOCKJITTER = 20;       // Not implemented
+const CARDFREQ = [ .8, .2 ];  // low/high pair, any/red
+
+
 /* load psiturk */
 var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
 
@@ -9,13 +18,15 @@ class Card {
       this.pays=pays; this.p=p;
    }
    html(side) {
-     return('<div class="card-container"> <div class="card '+
+     return('<div class="card-container" id="card-' + this.sym +'">' +
+	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
+            '<div class="card '+
              this.color +' '+ side + '">' +
               this.sym +'</div>'+
             '<p> -'+ this.cost + '</p></div>');
   }
   score(){
-     return(((this.p - Math.random(1)) > 0) * this.pays - this.cost);
+     return(((this.p - Math.random(1)) > 0) * this.pays);
   }
   add(right){
    return('<div class="twocards">'+
@@ -23,14 +34,26 @@ class Card {
            right.html('right')+
            '</div>')
   }
+  fade(){
+      $('#card-' +this.sym).fadeTo(100, .1)
+  }
 };
 
 // initialize cards. probablility will change
-var cards = [
-   new Card('✿', 'blue', 10 , 10 , .2),
-   new Card('❖', 'blue', 10 , 10 , .8),
-   new Card('✢', 'red' , 100, 500, 1)
-];
+const CARDS = {
+   // phase 1 20/80/100
+  'p28_2': new Card('✿', 'blue', 10 , 10 , .2),
+  'p28_8': new Card('❖', 'blue', 10 , 10 , .8),
+  'p28_1': new Card('✢', 'red' , 100, 500, 1),
+   // phase 2 80/20/100
+  'p82_8': new Card('✿', 'blue', 10 , 10 , .8),
+  'p82_2': new Card('❖', 'blue', 10 , 10 , .2),
+  'p82_1': new Card('✢', 'red' , 100, 500, 1),
+   // phase 3 100/100/100
+  'p11_x': new Card('✿', 'blue', 10 , 10 , 1),
+  'p11_y': new Card('❖', 'blue', 10 , 10 , 1),
+  'p11_r': new Card('✢', 'red' , 100, 500, 1)
+};
 
 
 var instructions = {       
@@ -45,44 +68,112 @@ var instructions = {
     'Pay attention to the symbol on the card</div>',
    
     "Choices will look like: <br>" +
-     cards[0].add(cards[1])
+     CARDS['p28_2'].add(CARDS['p28_8'])
     ],        
     show_clickable_nav: true      
 }    
 
-const INITPOINTS=100;
 
 function mktrial(l, r) {
   return({
     type: 'html-keyboard-response',
-    stimulus: cards[l].add(cards[r]),
+    stimulus: CARDS[l].add(CARDS[r]),
     choices: [37, 39, 'q'],
     //choices: ['left arrow', 'right arrow', 'q'],
-    prompt: "<p>left or right<p>",
+    prompt: "<p>left or right " +
+	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"") +
+	  "<p>",
     on_start: function(trial) {
       prevscores=jsPsych.data.get().select('score').sum()
       cur_score = INITPOINTS + prevscores;
       trial.prompt += '<p>You have ' + cur_score + ' points</p>';
-      console.log('trial start', cur_score, prevscores);
     },
     on_finish: function(data){
       if(data.key_press == 81){
         jsPsych.endExperiment('The experiment was ended by pressing Q.');
       }
 
-      // increase score
-      if(data.key_press==37){
-         data.score = cards[l].score();
-      }else {
-         data.score = cards[r].score();
-      }
-      console.log('trial end', data.score, data) 
-    }
+      // which card was choosen?
+      if(data.key_press==37){picked=l; ignored=r;}
+      else                  {picked=r; ignored=l;}
+      // add score
+      data.l = l;
+      data.r = r;
+      data.cost  = CARDS[picked].cost;
+      data.p     = CARDS[picked].p;
+      data.win   = CARDS[picked].score();
+      data.score = data.win - data.cost;
+      data.picked = picked;
+      data.ignored = ignored;
+    },
+   left: l, right: r
 })}
+
+var feedback={
+    type: 'html-keyboard-response',
+    stimulus: function(){
+	return(jsPsych.data.get().last(1).values()[0].stimulus) },
+    choices: jsPsych.NO_KEYS,
+    trial_duration: 700,
+    //choices: ['left arrow', 'right arrow', 'q'],
+    on_start: function(trial){
+	// setup win vs nowin feedback color and message
+	var prev=jsPsych.data.get().last(1).values()[0]
+	var msg=(prev.win > 0)?("+"+prev.win):"got nothing!";
+	var color=(prev.win > 0)?"win":"nowin";
+	trial.prompt="<p class="+ color + ">" + msg +
+                    "</p><p> spent: " + prev.cost +"</p>";
+    },
+    on_load: function(trial) {
+	// fade the card we did't choose
+	data = jsPsych.data.get().last(1).values()[0];
+	var card = CARDS[data.ignored]
+        card.fade()
+    },
+}
+
+// TODO: figure out block structure
+//phase1 = BLOCKLEN - BLOCKJITTER + Math.random(BLOCKJITTER*2) 
+//phase2 = (BLOCKLEN - phase1)/BLOCKLEN 
+function mkrep(l,r,n) {
+ return(jsPsych.randomization.repeat(mktrial(l,r), n, 0))
+}
+
+// make each phase
+trials=[
+ [].concat(
+  mkrep('p28_2','p28_8', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p28_8','p28_2', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p28_1','p28_2', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p28_2','p28_1', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p28_1','p28_8', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p28_8','p28_1', BLOCKLEN*CARDFREQ[1]/4)),
+ [].concat(
+  mkrep('p82_2','p82_8', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p82_8','p82_2', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p82_1','p82_2', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p82_2','p82_1', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p82_1','p82_8', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p82_8','p82_1', BLOCKLEN*CARDFREQ[1]/4)),
+ [].concat(
+  mkrep('p11_x','p11_y', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p11_y','p11_x', BLOCKLEN*CARDFREQ[0]/2),
+  mkrep('p11_r','p11_y', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p11_y','p11_r', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p11_r','p11_x', BLOCKLEN*CARDFREQ[1]/4),
+  mkrep('p11_x','p11_r', BLOCKLEN*CARDFREQ[1]/4)),
+].map( (a) => jsPsych.randomization.shuffle(a)).flat()
+
+// show all left chards
+if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
+
+// zip feedback together with trails
+trials = trials.flatMap((k) => [k, feedback]);
 
 /* start the experiment */
 jsPsych.init({      
-   timeline: [instructions, mktrial(0,1), mktrial(2,0), mktrial(1,2)],
+   // instructions,
+   timeline: trials,
    on_finish: function() {
       psiturk.saveData({
          success: function() { psiturk.completeHIT(); }
