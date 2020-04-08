@@ -85,6 +85,12 @@ var instructions = {
     show_clickable_nav: true      
 }    
 
+function totalPoints(){
+  prevscores=jsPsych.data.get().select('score').sum();
+  cur_score = INITPOINTS + prevscores;
+  return(cur_score)
+}
+
 
 function mktrial(l, r) {
   return({
@@ -94,9 +100,7 @@ function mktrial(l, r) {
     //choices: ['left arrow', 'right arrow', 'q'],
     prompt: "<p>left or right</p>",
     on_start: function(trial) {
-      prevscores=jsPsych.data.get().select('score').sum()
-      cur_score = INITPOINTS + prevscores;
-      trial.prompt += '<p>You have ' + cur_score + ' points</p>' +
+      trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
 	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_finish: function(data){
@@ -133,11 +137,24 @@ var feedback={
 	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
 	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
 	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>" )
+		(prev.win - prev.cost) + "</p>"+
+          "<p class='feedback'>Total: " + totalPoints() + "</p>"
+ )
 
     },
     choices: jsPsych.NO_KEYS,
     trial_duration: FEEDBACKDUR,
+}
+var debrief={
+    type: 'html-keyboard-response',
+    stimulus: function(trial){
+	// setup win vs nowin feedback color and message
+	return(
+          "<p class='feedback'>Thanks for playing!<br>" +
+          "You accumulated " + totalPoints() + " points!<br>" +
+	  "Push any key to finish!</p>")
+
+    }
 }
 
 // TODO: figure out block structure
@@ -188,7 +205,7 @@ trials = trials.flatMap((k) => [k, feedback]);
 /* start the experiment */
 jsPsych.init({      
    // 
-   timeline: [get_info, instructions, trials].flat(),
+   timeline: [get_info, instructions, trials, debrief].flat(),
    on_finish: function() {
       psiturk.saveData({
          success: function() { psiturk.completeHIT(); }
