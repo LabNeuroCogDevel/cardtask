@@ -3,8 +3,10 @@ const DEBUG = 0; // change 1=>0
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 20;
-const BLOCKJITTER = 2;        // Not implemented
+const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
+const FEEDBACKDUR = 1400;   //ms to display feedback
+// TODO: make feedback faster after a few trials
 
 
 /* load psiturk */
@@ -128,13 +130,14 @@ var feedback={
 	var card = CARDS[prev.picked]
 	return(
 	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>" +
 	  "<p class='feedback cost'> Payed: -" + prev.cost +"</p>" +
-	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" )
+	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+	  "<p class='feedback net "+color+"'>Net: " +
+		(prev.win - prev.cost) + "</p>" )
+
     },
     choices: jsPsych.NO_KEYS,
-    trial_duration: 1000,
+    trial_duration: FEEDBACKDUR,
 }
 
 // TODO: figure out block structure
