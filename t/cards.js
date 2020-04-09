@@ -1,5 +1,4 @@
 var util = require('../static/js/utils.js')
-console.log(util)
 var t = require('tap')
 c0 = new util.Card('✿', 'blue', 10 , 500, 0)
 c1 = new util.Card('✿', 'blue', 10 , 500, 1)

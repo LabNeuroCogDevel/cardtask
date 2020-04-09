@@ -16,6 +16,7 @@ Each trial is a choice between 2 of 3 total cards (✿, ❖, ✢).
  - [ ] write consent page (`templates/consent.html`)
  - [ ] Jitter block/phase lengths
  - [ ] slower feedback for first n trials?
+ - [ ] testing (with jest?)
 
 ## Hacking
  - install psiturk from master branch
@@ -45,3 +46,4 @@ Each trial is a choice between 2 of 3 total cards (✿, ❖, ✢).
  * https://psiturk.readthedocs.io/en/latest/heroku.html
  * https://www.jspsych.org/plugins/jspsych-html-keyboard-response/
  * https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+ * https://github.com/jspsych/jsPsych/tree/master/tests
