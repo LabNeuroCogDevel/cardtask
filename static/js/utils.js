@@ -1,3 +1,32 @@
+// cars contain some values
+class Card {
+   constructor(sym,  color, cost, pays, p){
+      this.sym = sym; this.color=color; this.cost=cost;
+      this.pays=pays; this.p=p;
+   }
+   html(side) {
+     return('<div class="card-container" id="card-' + this.sym +'">' +
+	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
+            '<div class="card '+
+             this.color +' '+ side + '">' +
+              this.sym +'</div>'+
+            '<p> -'+ this.cost + '</p></div>');
+  }
+  score(){
+     return(((this.p - Math.random(1)) > 0) * this.pays);
+  }
+  add(right){
+   return('<div class="twocards">'+
+           this.html('left')+
+           right.html('right')+
+           '</div>')
+  }
+  // 20200408 - no longer used, was for feeback
+  fade(){
+      $('#card-' +this.sym).fadeTo(100, .1)
+  }
+};
+
 
 function AssertException(message) { this.message = message; }
 AssertException.prototype.toString = function () {
@@ -18,3 +47,6 @@ function boolpercent(arr) {
 	}
 	return 100* count / arr.length;
 }
+
+// export for testing
+module.exports = { Card };

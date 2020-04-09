@@ -9,38 +9,7 @@ const FEEDBACKDUR = 1400;   //ms to display feedback
 // TODO: make feedback faster after a few trials
 
 
-/* load psiturk */
-var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
-
-
-// cars contain some values
-class Card {
-   constructor(sym,  color, cost, pays, p){
-      this.sym = sym; this.color=color; this.cost=cost;
-      this.pays=pays; this.p=p;
-   }
-   html(side) {
-     return('<div class="card-container" id="card-' + this.sym +'">' +
-	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
-            '<div class="card '+
-             this.color +' '+ side + '">' +
-              this.sym +'</div>'+
-            '<p> -'+ this.cost + '</p></div>');
-  }
-  score(){
-     return(((this.p - Math.random(1)) > 0) * this.pays);
-  }
-  add(right){
-   return('<div class="twocards">'+
-           this.html('left')+
-           right.html('right')+
-           '</div>')
-  }
-  // 20200408 - no longer used, was for feeback
-  fade(){
-      $('#card-' +this.sym).fadeTo(100, .1)
-  }
-};
+/* Card class defined in utils */
 
 // initialize cards. probablility will change
 const CARDS = {
@@ -58,6 +27,7 @@ const CARDS = {
   'p11_r': new Card('✢', 'red' , 100, 500, 1)
 };
 
+// initial trial - get name and age
 var get_info = {
   type: 'survey-text',
   questions: [
@@ -66,6 +36,7 @@ var get_info = {
   ],
 };
 
+// instruction slides
 var instructions = {       
     type: 'instructions',     
     pages: [      
@@ -85,13 +56,14 @@ var instructions = {
     show_clickable_nav: true      
 }    
 
+// sum all scores. used in choice, feedback, and debrief
 function totalPoints(){
   prevscores=jsPsych.data.get().select('score').sum();
   cur_score = INITPOINTS + prevscores;
   return(cur_score)
 }
 
-
+// make a trial from 2 card index keys
 function mktrial(l, r) {
   return({
     type: 'html-keyboard-response',
@@ -124,6 +96,7 @@ function mktrial(l, r) {
    left: l, right: r
 })}
 
+// feedback trial informs player of their choice
 var feedback={
     type: 'html-keyboard-response',
     stimulus: function(trial){
@@ -139,9 +112,7 @@ var feedback={
 	  "<p class='feedback net "+color+"'>Net: " +
 		(prev.win - prev.cost) + "</p>"+
           "<p class='feedback'>Total: " + totalPoints() + "</p>"
- )
-
-    },
+ )},
     choices: jsPsych.NO_KEYS,
     trial_duration: FEEDBACKDUR,
 }
@@ -199,8 +170,11 @@ trials=[p28, p82, p28, p82, p11].
 // show all left chards
 if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
 
-// zip feedback together with trails
+// add feedback after each trial
 trials = trials.flatMap((k) => [k, feedback]);
+
+/* load psiturk */
+var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
 
 /* start the experiment */
 jsPsych.init({      
