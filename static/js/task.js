@@ -9,6 +9,12 @@ const FEEDBACKDUR = 1400;   //ms to display feedback
 // TODO: make feedback faster after a few trials
 
 
+//keys
+// see https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
+const LEFT_KEY = 37;
+const RIGHT_KEY = 39;   
+const SPACE_KEY = 32; //progress feedback
+
 /* Card class defined in utils */
 
 // initialize cards. probablility will change
@@ -39,17 +45,21 @@ var get_info = {
 // instruction slides
 var instructions = {       
     type: 'instructions',     
-    pages: [      
-    '<div>In this game, you will use points to buy a card<br>' +       
-    'Some cards pay more often then others<br>' +      
-    'Use the arrow keys to select a card</div>',     
+    pages: [
+    '<div>In this game, you will use points to buy a card.<br>' +
+    'Some cards pay more often then others.<br>' +
+    ' Try to get as many points as you can!',
+
+    'Use the <b>arrow keys</b> to select a card<br> ' +
+    'and <b>spacebar</b> to get to the next pair</div>',
 
     '<div>Blue cards cost 10 points.<br>' +
     'Red cards cost 100 points.<br>' +
     'Pay attention to the symbol on the card</div>',
 
-    '<div>Ready? <br>The game starts after this page<br>'+
-    '<br>Remember to hit the left or right arrow key to choose a card<br>'+
+    '<div>Ready? <br>The game starts after this page<br><br>' +
+    '<br>Remember to hit the <b>left or right arrow key </b>' +
+    'to choose a card and <b>spacebar</b> to continue' +
     '</div>',
    
     //"Choices will look like: <br>" +
@@ -67,25 +77,20 @@ function totalPoints(){
 
 // make a trial from 2 card index keys
 function mktrial(l, r) {
-    if(DEBUG) { console.log(l,r)}
+  if(DEBUG) { console.log(l,r)}
   return({
     type: 'html-keyboard-response',
     stimulus: CARDS[l].add(CARDS[r]),
-    choices: [37, 39, 'q'],
-    //choices: ['left arrow', 'right arrow', 'q'],
+    choices: [LEFT_KEY, RIGHT_KEY],
     prompt: "<p>left or right</p>",
     on_start: function(trial) {
       trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
 	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_finish: function(data){
-      if(data.key_press == 81){
-        jsPsych.endExperiment('The experiment was ended by pressing Q.');
-      }
-
       // which card was choosen?
-      if(data.key_press==37){picked=l; ignored=r;}
-      else                  {picked=r; ignored=l;}
+      if(data.key_press==LEFT_KEY){picked=l; ignored=r;}
+      else                        {picked=r; ignored=l;}
       // add score
       data.l = l;
       data.r = r;
@@ -114,10 +119,13 @@ var feedback={
 	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
 	  "<p class='feedback net "+color+"'>Net: " +
 		(prev.win - prev.cost) + "</p>"+
-          "<p class='feedback'>Total: " + totalPoints() + "</p>"
- )},
-    choices: jsPsych.NO_KEYS,
-    trial_duration: FEEDBACKDUR,
+          "<p class='feedback'>Total: " + totalPoints() + "</p>"+
+          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+    )},
+    // 20200410 - no autoadvance
+    choices: [SPACE_KEY],
+    //choices: jsPsych.NO_KEYS,
+    //trial_duration: FEEDBACKDUR,
 }
 var debrief={
     type: 'html-keyboard-response',
