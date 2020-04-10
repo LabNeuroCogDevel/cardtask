@@ -1,11 +1,11 @@
-// starting value
+// starting value should be > 100, the most expensive card
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200410.1-blk40';
+const TASKVER = '20200410.2-blk40+inst';
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -56,19 +56,25 @@ var instructions = {
     type: 'instructions',     
     pages: [
     '<div>In this game, you will use points to buy a card.<br>' +
-    'Some cards pay more often then others.<br>' +
-    ' Try to get as many points as you can!',
+    'Some cards pay out more often then others.<br>' +
+    'Try to get as many points as you can!</div>',
 
-    'Use the <b>arrow keys</b> to select a card<br> ' +
-    'and <b>spacebar</b> to get to the next pair</div>',
+    'Each card has a cost to buy it, either 10 or 100 points.<br>' +
+    "You have to pay whether you win or lose.",
 
-    '<div>Blue cards cost 10 points.<br>' +
-    'Red cards cost 100 points.<br>' +
-    'Pay attention to the symbol on the card</div>',
+    "On each trial, pick between two cards using the arrow keys.<br>"+
+    "If your card wins, you get 500 points!",
+
+    "Your goal is to learn which cards give rewards most often<br>" +
+    "so that you can get as many points as possible.",
+
+    "But be careful!<br>" +
+    "Sometimes the chances of a card giving you a reward will change.",
 
     '<div>Ready? <br>The game starts after this page<br><br>' +
-    '<br>Remember to hit the <b>left or right arrow key </b>' +
-    'to choose a card and <b>spacebar</b> to continue' +
+    '<br>Remember, hit<br>'+
+    'the <b>left or right arrow key</b> to pick a card<br>' +
+    'and <b>spacebar</b> to continue' +
     '</div>',
    
     //"Choices will look like: <br>" +
