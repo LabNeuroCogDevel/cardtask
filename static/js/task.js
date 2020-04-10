@@ -1,12 +1,15 @@
-const DEBUG = 0; // change 1=>0
 // starting value
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
-const FEEDBACKDUR = 1400;   //ms to display feedback
-// TODO: make feedback faster after a few trials
+const DEBUG = 0; // change 1=>0
+const TASKVER = '20200410.1-blk40';
+
+// 20200410 - feedback no longer autoadvances
+// xxx TODO: make feedback faster after a few trials
+//const FEEDBACKDUR = 1400;   //ms to display feedback
 
 
 //keys
@@ -40,6 +43,12 @@ var get_info = {
     {prompt: "Your Name?", name: "name"}, 
     {prompt: "Your Age?", placeholder: "25", name:"age"}
   ],
+  on_finish: function(data){
+      // add task version
+      resp = JSON.parse(data.responses)
+      resp.taskver = TASKVER
+      data.responses=JSON.stringify(resp)
+  }
 };
 
 // instruction slides
