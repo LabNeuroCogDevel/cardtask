@@ -157,13 +157,15 @@ p82 = [].concat(
   mkrep('p82_2D','p82_1R', nhigh),
   mkrep('p82_1R','p82_8F', nhigh),
   mkrep('p82_8F','p82_1R', nhigh))
+// 20200410 - end block is 2x as long as others
+// maybe should be p11,p11 in trials
 p11 = [].concat(
-  mkrep('p11_1F','p11_1D', nlow ),
-  mkrep('p11_1D','p11_1F', nlow ),
-  mkrep('p11_1R','p11_1D', nhigh),
-  mkrep('p11_1D','p11_1R', nhigh),
-  mkrep('p11_1R','p11_1F', nhigh),
-  mkrep('p11_1F','p11_1R', nhigh))
+  mkrep('p11_1F','p11_1D', nlow *2),
+  mkrep('p11_1D','p11_1F', nlow *2),
+  mkrep('p11_1R','p11_1D', nhigh*2),
+  mkrep('p11_1D','p11_1R', nhigh*2),
+  mkrep('p11_1R','p11_1F', nhigh*2),
+  mkrep('p11_1F','p11_1R', nhigh*2))
 
 // combine all
 trials=[p28, p82, p28, p82, p11].
