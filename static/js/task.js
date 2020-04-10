@@ -2,7 +2,7 @@ const DEBUG = 0; // change 1=>0
 // starting value
 const INITPOINTS=200;
 // make block
-const BLOCKLEN = 20;
+const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const FEEDBACKDUR = 1400;   //ms to display feedback
