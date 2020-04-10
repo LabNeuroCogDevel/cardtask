@@ -3,6 +3,7 @@
 # 20200410WF - init
 #  parse poorly quoted json string into it's own columns
 
+options(warn=-1)
 suppressMessages(library(dplyr))
 #d <- read.table("txt/res.tsv",sep="\t", stringsAsFactors=F)
 d <- read.table(file("stdin"), header=T, sep="\t", stringsAsFactors=F)
