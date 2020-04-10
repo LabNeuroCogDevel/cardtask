@@ -14,17 +14,17 @@ const FEEDBACKDUR = 1400;   //ms to display feedback
 // initialize cards. probablility will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2': new Card('✿', 'blue', 10 , 500, .2),
-  'p28_8': new Card('❖', 'blue', 10 , 500, .8),
-  'p28_1': new Card('✢', 'red' , 100, 500, 1),
+  'p28_2F': new Card('✿', 'blue', 10 , 500, .2),
+  'p28_8D': new Card('❖', 'blue', 10 , 500, .8),
+  'p28_1R': new Card('✢', 'red' , 100, 500, 1),
    // phase 2 80/20/100
-  'p82_8': new Card('✿', 'blue', 10 , 500, .8),
-  'p82_2': new Card('❖', 'blue', 10 , 500, .2),
-  'p82_1': new Card('✢', 'red' , 100, 500, 1),
+  'p82_8F': new Card('✿', 'blue', 10 , 500, .8),
+  'p82_2D': new Card('❖', 'blue', 10 , 500, .2),
+  'p82_1R': new Card('✢', 'red' , 100, 500, 1),
    // phase 3 100/100/100
-  'p11_x': new Card('✿', 'blue', 10 , 500, 1),
-  'p11_y': new Card('❖', 'blue', 10 , 500, 1),
-  'p11_r': new Card('✢', 'red' , 100, 500, 1)
+  'p11_1F': new Card('✿', 'blue', 10 , 500, 1),
+  'p11_1D': new Card('❖', 'blue', 10 , 500, 1),
+  'p11_1R': new Card('✢', 'red' , 100, 500, 1)
 };
 
 // initial trial - get name and age
@@ -40,15 +40,17 @@ var get_info = {
 var instructions = {       
     type: 'instructions',     
     pages: [      
-    '<div>In this experiment, you will use points to buy a card<br>' +       
-    'Some cards pay better or more often then others<br>' +      
+    '<div>In this game, you will use points to buy a card<br>' +       
+    'Some cards pay more often then others<br>' +      
     'Use the arrow keys to select a card</div>',     
 
     '<div>Blue cards cost 10 points.<br>' +
     'Red cards cost 100 points.<br>' +
     'Pay attention to the symbol on the card</div>',
 
-    '<div>Ready? <br>The task after this page</div>',
+    '<div>Ready? <br>The game starts after this page<br>'+
+    '<br>Remember to hit the left or right arrow key to choose a card<br>'+
+    '</div>',
    
     //"Choices will look like: <br>" +
     // CARDS['p28_2'].add(CARDS['p28_8'])
@@ -65,6 +67,7 @@ function totalPoints(){
 
 // make a trial from 2 card index keys
 function mktrial(l, r) {
+    if(DEBUG) { console.log(l,r)}
   return({
     type: 'html-keyboard-response',
     stimulus: CARDS[l].add(CARDS[r]),
@@ -141,26 +144,26 @@ var nhigh = BLOCKLEN*CARDFREQ[1]/4;
 
 // blocks of 20/80, 80/20, and 100/100
 p28 = [].concat(
-  mkrep('p28_2','p28_8', nlow ),
-  mkrep('p28_8','p28_2', nlow ),
-  mkrep('p28_1','p28_2', nhigh),
-  mkrep('p28_2','p28_1', nhigh),
-  mkrep('p28_1','p28_8', nhigh),
-  mkrep('p28_8','p28_1', nhigh))
+  mkrep('p28_2F','p28_8D', nlow ),
+  mkrep('p28_8D','p28_2F', nlow ),
+  mkrep('p28_1R','p28_2F', nhigh),
+  mkrep('p28_2F','p28_1R', nhigh),
+  mkrep('p28_1R','p28_8D', nhigh),
+  mkrep('p28_8D','p28_1R', nhigh))
 p82 = [].concat(
-  mkrep('p82_2','p82_8', nlow ),
-  mkrep('p82_8','p82_2', nlow ),
-  mkrep('p82_1','p82_2', nhigh),
-  mkrep('p82_2','p82_1', nhigh),
-  mkrep('p82_1','p82_8', nhigh),
-  mkrep('p82_8','p82_1', nhigh))
+  mkrep('p82_2D','p82_8F', nlow ),
+  mkrep('p82_8F','p82_2D', nlow ),
+  mkrep('p82_1R','p82_2D', nhigh),
+  mkrep('p82_2D','p82_1R', nhigh),
+  mkrep('p82_1R','p82_8F', nhigh),
+  mkrep('p82_8F','p82_1R', nhigh))
 p11 = [].concat(
-  mkrep('p11_x','p11_y', nlow ),
-  mkrep('p11_y','p11_x', nlow ),
-  mkrep('p11_r','p11_y', nhigh),
-  mkrep('p11_y','p11_r', nhigh),
-  mkrep('p11_r','p11_x', nhigh),
-  mkrep('p11_x','p11_r', nhigh))
+  mkrep('p11_1F','p11_1D', nlow ),
+  mkrep('p11_1D','p11_1F', nlow ),
+  mkrep('p11_1R','p11_1D', nhigh),
+  mkrep('p11_1D','p11_1R', nhigh),
+  mkrep('p11_1R','p11_1F', nhigh),
+  mkrep('p11_1F','p11_1R', nhigh))
 
 // combine all
 trials=[p28, p82, p28, p82, p11].
