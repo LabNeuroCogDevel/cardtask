@@ -11,14 +11,15 @@
 # needs txt/datastring.json, see Makefile
 [ -z "$1" -o ! -s "$1" ] && echo "USAGE: $0 datastring.json # from psiturk db" && exit 1
 
-(
- echo "qs turkid trial rt left right key prob win" |sed 's/ /	/g'
-  < $1 jq -r '
-   . as $r |
-   .data[0].trialdata.responses as $q |
-   .data[] |
-   .trialdata |
-   select(.rt != null) |
-   [$q, $r.workerId, .trial_index, .rt, .l, .r, .key_press, .p, .win] |
-   @tsv') |
- ./readraw.R 
+# header
+echo "subjInfo subjID trial rt leftInfo rightInfo key choice pts" |sed 's/ /	/g'
+# parse nested json
+ < $1 jq -r '
+  . as $r |
+  .data[0].trialdata.responses as $q |
+  .data[] |
+  .trialdata |
+  select(.rt != null) |
+  [$q, $r.workerId, .trial_index, .rt, .l, .r, .key_press, .p, .win] |
+  @tsv'
+
