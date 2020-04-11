@@ -1,3 +1,13 @@
+/*
+ * LNCD Card Task - 20200406 - FC + WF
+ *  
+ *  task.js -  makes a trial `timeline` global to be used by jsPsych
+ *  see also:
+ *    utils.js           -  "Card" class definition
+ *    templates/exp.html - `timeline` usage. jsPsych+psiTurk
+ *    t/cards.js         - minimal tests
+ *
+ */
 // starting value should be > 100, the most expensive card
 const INITPOINTS=200;
 // make block
@@ -201,19 +211,6 @@ if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
 // add feedback after each trial
 trials = trials.flatMap((k) => [k, feedback]);
 
-/* load psiturk */
-var psiturk = new PsiTurk(uniqueId, adServerLoc, mode);
+var timeline = [get_info, instructions, trials, debrief].flat()
 
-/* start the experiment */
-jsPsych.init({      
-   // 
-   timeline: [get_info, instructions, trials, debrief].flat(),
-   on_finish: function() {
-      psiturk.saveData({
-         success: function() { psiturk.completeHIT(); }
-      });
-   },
-   on_data_update: function(data) {
-      psiturk.recordTrialData(data);
-   }
-});
+/* 'timeline' used in templates/exp.html */
