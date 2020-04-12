@@ -37,15 +37,6 @@ body {
 /* audit */
 .debug {background-color: orange;}
 
-/* feedback */
-.feedback {padding: 10px}
-.win { border: solid green 5px;}
-.nowin { border: solid black 5px;}
-.net.win {background-color: green; color:white;}
-.net.nowin {background-color: red; color:white;}
-.sym { font-size: 30px;}
-/*.cost { background-color: #ff0000; color:white;}*/
-.cost { border: solid black 5px;}
 
 
 /* text styling */

@@ -1,0 +1,10 @@
+/* feedback */
+.feedback {padding: 5px; font-size: smaller}
+.win { border: solid green 5px;}
+.nowin { border: solid black 5px;}
+.net {  font-size: larger; padding: 10px;}
+.net.win {background-color: green; color:white;}
+.net.nowin {background-color: red; color:white;}
+.sym { font-size: 60px; padding: 5px;}
+/*.cost { background-color: #ff0000; color:white;}*/
+.cost { border: solid black 5px;}
