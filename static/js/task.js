@@ -15,11 +15,11 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200410.2-blk40+inst';
+const TASKVER = '20200412.1-pnts';
 
-const CARDWIN = 500;
-const LOWCOST = 10;
-const HIGHCOST = 100;
+const CARDWIN = 50;
+const LOWCOST = 1;
+const HIGHCOST = 10;
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -137,7 +137,10 @@ function mktrial(l, r) {
 })}
 
 // feedback trial informs player of their choice
-var feedback={
+// use function to make b/c we might want to 
+// change proprties of one but not all (index.html in github pages)
+function mkfbk() { 
+   return({
     type: 'html-keyboard-response',
     stimulus: function(trial){
 	// setup win vs nowin feedback color and message
@@ -158,7 +161,9 @@ var feedback={
     choices: [SPACE_KEY],
     //choices: jsPsych.NO_KEYS,
     //trial_duration: FEEDBACKDUR,
-}
+})}
+
+var feedback= mkfbk()
 var debrief={
     type: 'html-keyboard-response',
     stimulus: function(trial){

@@ -54,28 +54,74 @@ see https://labneurocogdevel.github.io/cardtask
 	 )}
       
       // stolen from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
-      function animateValue(obj, start, end, duration, text) {
+      const MAXCNTDUR=250 //ms
+      function countWin(net) {
         let startTimestamp = null;
+	let obj = $('.net');
+	const duration = (net/CARDWIN)*MAXCNTDUR;
+	const g = 128; // green value
+	const c = 4; // exp scale coef
         const step = (timestamp) => {
           if (!startTimestamp) startTimestamp = timestamp;
           const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-          obj.html(text + Math.floor(progress * (end - start) + start));
+	  const cval = progress*net
+	  const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
+	  //  colors                     == 0 20 40 49
+          // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
+	  const c_points =  Math.floor(cval)
+          obj.html("Net: " + c_points);
+          obj.css("background-color", "rgb(0," + g_color + ",0)");
           if (progress < 1) {
             window.requestAnimationFrame(step);
           }
         };
         window.requestAnimationFrame(step);
       }
+      function pictureRep(n) {
+	  // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
+	  // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
+	  let ncol = 10
+	  let img = "<img class='coin' src='static/images/coin_sm.png'/>" 
+	  let img_col = Array(ncol).fill(img).join("\t")
+	  let imgx = Array(n%ncol).fill(img).join("\t")
+	  let all = Array(Math.floor(n/ncol)).fill(img_col).concat(imgx).join("<br>")
+	  return(all)
+      }
       
       fbk={}
-      fbk['orig'] = fbk['cnt'] = fbk['coin'] = feedback
-      MAXCNTDUR=1000 //ms
+      fbk['orig'] =  mkfbk()
+
+      fbk['coin'] = mkfbk()
+      fbk['coin'].stimulus= function(trial){
+	// setup win vs nowin feedback color and message
+	let prev=jsPsych.data.get().last(1).values()[0];
+	let msg=(prev.win > 0)?("+"+prev.win):"0";
+	let color=(prev.win > 0)?"win":"nowin";
+	let card = CARDS[prev.picked];
+	return(
+	  "<p class='feedback sym'>" + card.sym +"</p>" +
+	  pictureRep(prev.win) +
+	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+	  "<p class='feedback net "+color+"'>Net: " +
+		(prev.win - prev.cost) + "</p>"+
+          "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+    )},
+      fbk['coin'].on_load = function(trial) {
+	let prev=jsPsych.data.get().last(1).values()[0]
+	  setTimeout(function(){
+	    $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
+	  },300)
+      }
+
+
+      // change onload to count up points
+      fbk['cnt'] = mkfbk()
       fbk['cnt'].on_load = function(trial) {
-	const prev=jsPsych.data.get().last(1).values()[0]
-        const net = (prev.win - prev.cost)
-	if(net>0) {
-	  animateValue($('.net'), 0, net, net/CARDWIN*MAXCNTDUR, "NET:")
-	} 
+	let prev=jsPsych.data.get().last(1).values()[0]
+        let net = (prev.win - prev.cost)
+	if(net>0) {countWin(net)} 
       }
  
       // dummy trial that lasts 0 seconds
@@ -92,7 +138,7 @@ see https://labneurocogdevel.github.io/cardtask
                  data.picked = c;
       }})}
       function fulltrial() {
-	t = mktrial("p11_1D", "test_1R")
+	t = mktrial("p11_1D", "p11_1R")
 	jsPsych.init({timeline: [t, feedback], display_element: jsp});
       }
       function mkfeedback(c) {
@@ -114,11 +160,15 @@ see https://labneurocogdevel.github.io/cardtask
 	  feedback = fbk[n]
 	  console.log('updateing feedback', n, feedback)
       }
+      function init(){
+      	fbk_set('coin');
+      	mkfeedback('p11_1R');
+      }
     </script>
 
   </head>
 
-  <body>
+  <body onload="init()">
     fbk settings: 
       <a class="fbk select" id=orig onclick="fbk_set('orig')">orig</a> 
       <a class=fbk id=cnt onclick="fbk_set('cnt')">cnt</a> 
