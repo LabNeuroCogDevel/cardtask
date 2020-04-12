@@ -35,7 +35,7 @@ const SPACE_KEY = 32; //progress feedback
 /* Card class defined in utils */
 
 // initialize cards. probablility will change
-var CARDS = {
+const CARDS = {
    // phase 1 20/80/100
   'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
   'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8),
@@ -47,7 +47,10 @@ var CARDS = {
    // phase 3 100/100/100
   'p11_1F': new Card('✿', 'blue', LOWCOST , CARDWIN,  1),
   'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
-  'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1)
+  'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+   // for testing only
+  'test_0R': new Card('0', 'red' , HIGHCOST, CARDWIN,  0),
+  'test_0B': new Card('0', 'blue', LOWCOST , CARDWIN,  0),
 };
 
 // initial trial - get name and age
