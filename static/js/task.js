@@ -17,6 +17,10 @@ const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
 const TASKVER = '20200410.2-blk40+inst';
 
+const CARDWIN = 500;
+const LOWCOST = 10;
+const HIGHCOST = 100;
+
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
 //const FEEDBACKDUR = 1400;   //ms to display feedback
@@ -31,19 +35,19 @@ const SPACE_KEY = 32; //progress feedback
 /* Card class defined in utils */
 
 // initialize cards. probablility will change
-const CARDS = {
+var CARDS = {
    // phase 1 20/80/100
-  'p28_2F': new Card('✿', 'blue', 10 , 500, .2),
-  'p28_8D': new Card('❖', 'blue', 10 , 500, .8),
-  'p28_1R': new Card('✢', 'red' , 100, 500, 1),
+  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
+  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8),
+  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // phase 2 80/20/100
-  'p82_8F': new Card('✿', 'blue', 10 , 500, .8),
-  'p82_2D': new Card('❖', 'blue', 10 , 500, .2),
-  'p82_1R': new Card('✢', 'red' , 100, 500, 1),
+  'p82_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .8),
+  'p82_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
+  'p82_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // phase 3 100/100/100
-  'p11_1F': new Card('✿', 'blue', 10 , 500, 1),
-  'p11_1D': new Card('❖', 'blue', 10 , 500, 1),
-  'p11_1R': new Card('✢', 'red' , 100, 500, 1)
+  'p11_1F': new Card('✿', 'blue', LOWCOST , CARDWIN,  1),
+  'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
+  'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1)
 };
 
 // initial trial - get name and age
@@ -69,11 +73,11 @@ var instructions = {
     'Some cards pay out more often then others.<br>' +
     'Try to get as many points as you can!</div>',
 
-    'Each card has a cost to buy it, either 10 or 100 points.<br>' +
+    'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
     "You have to pay whether you win or lose.",
 
     "On each trial, pick between two cards using the arrow keys.<br>"+
-    "If your card wins, you get 500 points!",
+    "If your card wins, you get " + CARDWIN + " points!",
 
     "Your goal is to learn which cards give rewards most often<br>" +
     "so that you can get as many points as possible.",
