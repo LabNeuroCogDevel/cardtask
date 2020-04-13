@@ -49,8 +49,8 @@ const CARDS = {
   'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
   'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // for testing only
-  'test_0R': new Card('0', 'red' , HIGHCOST, CARDWIN,  0),
-  'test_0B': new Card('0', 'blue', LOWCOST , CARDWIN,  0),
+  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0),
+  'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
 };
 
 // initial trial - get name and age
