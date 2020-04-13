@@ -13,7 +13,7 @@ see https://labneurocogdevel.github.io/cardtask
     <link rel="stylesheet" href="static/css/style.css" type="text/css" />
     <link id="feedback" rel="stylesheet" href="static/css/feedback.css" type="text/css" />
     <style>
-	.select {background: lightyellow; font-size: larger;}
+      .select {background: lightyellow; font-size: larger;}
     </style>
     <script src="static/lib/jquery-3.4.1.min.js" type="text/javascript"> </script>
     <script src="static/lib/underscore-min.js" type="text/javascript"> </script>
@@ -27,152 +27,191 @@ see https://labneurocogdevel.github.io/cardtask
     <script src="static/js/task.js" type="text/javascript"> </script>
 
     <script type="text/javascript">
-      // redfine cards for testing
+       // redfine cards for testing
 
-      
-     /*
-      CARDS relevant to testing:
+
+       /*
+       CARDS relevant to testing:
        'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
        'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
        'test_0R': new Card('0', 'red' , HIGHCOST, CARDWIN,  0),
        'test_0B': new Card('0', 'blue', LOWCOST , CARDWIN,  0),
-      */
-      var fbkstim = function(trial) {
-	// setup win vs nowin feedback color and message
-	var prev=jsPsych.data.get().last(1).values()[0]
-	var msg=(prev.win > 0)?("+"+prev.win):"0";
-	var color=(prev.win > 0)?"win":"nowin";
-	var card = CARDS[prev.picked]
-	return(
-	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
-	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>"+
-          "<p class='feedback'>Total: " + totalPoints() + "</p>"+
-          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
-	 )}
-      
-      // stolen from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
-      const MAXCNTDUR=250 //ms
-      function countWin(net) {
-        let startTimestamp = null;
-	let obj = $('.net');
-	const duration = (net/CARDWIN)*MAXCNTDUR;
-	const g = 128; // green value
-	const c = 4; // exp scale coef
-        const step = (timestamp) => {
-          if (!startTimestamp) startTimestamp = timestamp;
-          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-	  const cval = progress*net
-	  const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
-	  //  colors                     == 0 20 40 49
-          // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
-	  const c_points =  Math.floor(cval)
-          obj.html("Net: " + c_points);
-          obj.css("background-color", "rgb(0," + g_color + ",0)");
-          if (progress < 1) {
-            window.requestAnimationFrame(step);
-          }
-        };
-        window.requestAnimationFrame(step);
-      }
-      function pictureRep(n) {
-	  // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
-	  // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
-	  let ncol = 10
-	  let img = "<img class='coin' src='static/images/coin_sm.png'/>" 
-	  let img_col = Array(ncol).fill(img).join("\t")
-	  let imgx = Array(n%ncol).fill(img).join("\t")
-	  let all = Array(Math.floor(n/ncol)).fill(img_col).concat(imgx).join("<br>")
-	  return(all)
-      }
-      
-      fbk={}
-      fbk['orig'] =  mkfbk()
+        */
+var fbkstim = function(trial) {
+   // setup win vs nowin feedback color and message
+   var prev=jsPsych.data.get().last(1).values()[0]
+   var msg=(prev.win > 0)?("+"+prev.win):"0";
+   var color=(prev.win > 0)?"win":"nowin";
+   var card = CARDS[prev.picked]
+   return(
+      "<p class='feedback sym'>" + card.sym +"</p>" +
+      "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+      "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+      "<p class='feedback net "+color+"'>Net: " +
+      (prev.win - prev.cost) + "</p>"+
+      "<p class='feedback'>Total: " + totalPoints() + "</p>"+
+      "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+   )}
 
-      fbk['coin'] = mkfbk()
-      fbk['coin'].stimulus= function(trial){
-	// setup win vs nowin feedback color and message
-	let prev=jsPsych.data.get().last(1).values()[0];
-	let msg=(prev.win > 0)?("+"+prev.win):"0";
-	let color=(prev.win > 0)?"win":"nowin";
-	let card = CARDS[prev.picked];
-	return(
-	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  pictureRep(prev.win) +
-	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
-	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>"+
-          "<p class='feedback'>Total: " + totalPoints() + "</p>" +
-          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
-    )},
-      fbk['coin'].on_load = function(trial) {
-	let prev=jsPsych.data.get().last(1).values()[0]
-	  setTimeout(function(){
-	    $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
-	  },300)
+// stolen from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
+const MAXCNTDUR=250 //ms
+function countWin(net) {
+   let startTimestamp = null;
+   let obj = $('.net');
+   const duration = (net/CARDWIN)*MAXCNTDUR;
+   const g = 128; // green value
+   const c = 4; // exp scale coef
+   const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const cval = progress*net
+      const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
+      //  colors                     == 0 20 40 49
+      // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
+      const c_points =  Math.floor(cval)
+      obj.html("Net: " + c_points);
+      obj.css("background-color", "rgb(0," + g_color + ",0)");
+      if (progress < 1) {
+         window.requestAnimationFrame(step);
       }
+   };
+   window.requestAnimationFrame(step);
+}
+function pictureRep(n, red) {
+   // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
+   // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
+   let ncol = 10;
+   var imgsrc='coin_sm.png';
+   if(n==0) { imgsrc='redcoin_sm.png'; n=red}
+
+   let img = "<img class='coin' src='static/images/"+ imgsrc +"'/>" 
+   let img_col = Array(ncol).fill(img).join("\t")
+   let imgx = Array(n%ncol).fill(img).join("\t")
+   let all = Array(Math.floor(n/ncol)).fill(img_col).concat(imgx).join("<br>")
+   return(all)
+}
+
+fbk={}
+fbk['orig'] =  mkfbk()
+
+// show coins. vanish those that were paid
+fbk['coin'] = mkfbk()
+fbk['coin'].stimulus= function(trial){
+   // setup win vs nowin feedback color and message
+   let prev=jsPsych.data.get().last(1).values()[0];
+   let msg=(prev.win > 0)?("+"+prev.win):"0";
+   let color=(prev.win > 0)?"win":"nowin";
+   let card = CARDS[prev.picked];
+   return(
+      "<p class='feedback sym'>" + card.sym +"</p>" +
+      pictureRep(prev.win, prev.cost) +
+      "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+      "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+      "<p class='feedback net "+color+"'>Net: " +
+      (prev.win - prev.cost) + "</p>"+
+      "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+      "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+   )} 
+
+fbk['coin'].on_load = function(trial) {
+   let prev=jsPsych.data.get().last(1).values()[0]
+    console.log(prev.win,prev.cost)
+   if(prev.win-prev.cost>0) {
+       setTimeout(function(){
+	   $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
+       },300)
+   }
+}
 
 
-      // change onload to count up points
-      fbk['cnt'] = mkfbk()
-      fbk['cnt'].on_load = function(trial) {
-	let prev=jsPsych.data.get().last(1).values()[0]
-        let net = (prev.win - prev.cost)
-	if(net>0) {countWin(net)} 
-      }
- 
-      // dummy trial that lasts 0 seconds
-      function dummy(c){
-	  return({
-	      type: 'html-keyboard-response',
-	      stimulus: '',
-              trial_duration: 0,
-              on_finish: function(data) {
-                 data.cost  = CARDS[c].cost
-                 data.p     = CARDS[c].p
-                 data.win   = CARDS[c].score()
-                 data.score = data.win - data.cost;
-                 data.picked = c;
+// change onload to count up points
+fbk['cnt'] = mkfbk()
+fbk['cnt'].on_load = function(trial) {
+   let prev=jsPsych.data.get().last(1).values()[0]
+   let net = (prev.win - prev.cost)
+   if(net>0) {countWin(net)} 
+}
+
+
+// everything together
+fbk['everything'] = mkfbk()
+fbk['everything'].stimulus= function(trial){
+   // setup win vs nowin feedback color and message
+   let prev=jsPsych.data.get().last(1).values()[0];
+   let msg=(prev.win > 0)?("+"+prev.win):"0";
+   let color=(prev.win > 0)?"win":"nowin";
+   let card = CARDS[prev.picked];
+   return(
+      "<p class='feedback sym'>" + card.sym +"</p><div class='wallet'>" +
+      pictureRep(prev.win, prev.cost) +
+      "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+      "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+      "<p class='feedback net "+color+"'>Net: " +
+      (prev.win - prev.cost) + "</p>"+
+      "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+      "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+   )} 
+
+fbk['everything'].on_load = function(trial) {
+   let prev=jsPsych.data.get().last(1).values()[0]
+   let net = (prev.win - prev.cost)
+   if(net>0) {
+     countWin(net) 
+     setTimeout(function(){
+        $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
+     },300)
+   }
+}
+
+
+// dummy trial that lasts 0 seconds
+function dummy(c){
+   return({
+      type: 'html-keyboard-response',
+      stimulus: '',
+      trial_duration: 0,
+      on_finish: function(data) {
+         data.cost  = CARDS[c].cost
+         data.p     = CARDS[c].p
+         data.win   = CARDS[c].score()
+         data.score = data.win - data.cost;
+         data.picked = c;
       }})}
-      function fulltrial() {
-	t = mktrial("p11_1D", "p11_1R")
-	jsPsych.init({timeline: [t, feedback], display_element: jsp});
-      }
-      function mkfeedback(c) {
-	dummycard=dummy(c)
-	// push fake data and run feedback slide with given card
-	jsPsych.init({timeline: [dummycard, feedback], display_element: jsp});
-      }
-      
-      // play with feedback
-      function fbk_set(n){
-          // indicator
-	  $('.fbk').attr('class','fbk')
-	  $('#'+n).attr('class','fbk select')
-          // change style sheet
-          $('link[id="feedback"]').attr('href', 'static/css/feedback.css');
-	  if(n == "cnt") {
-	    $('link[id="feedback"]').attr('href', 'static/css/feedback-cnt.css');
-	  }
-	  feedback = fbk[n]
-	  console.log('updateing feedback', n, feedback)
-      }
-      function init(){
-      	fbk_set('coin');
-      	mkfeedback('p11_1R');
-      }
+function fulltrial() {
+   t = mktrial("p11_1D", "p11_1R")
+   jsPsych.init({timeline: [t, feedback], display_element: jsp});
+}
+function mkfeedback(c) {
+   dummycard=dummy(c)
+   // push fake data and run feedback slide with given card
+   jsPsych.init({timeline: [dummycard, feedback], display_element: jsp});
+}
+
+// play with feedback
+function fbk_set(n){
+   // indicator
+   $('.fbk').attr('class','fbk')
+   $('#'+n).attr('class','fbk select')
+   // change style sheet
+   $('link[id="feedback"]').attr('href', 'static/css/feedback.css');
+   if(n == "cnt" || n=="everything") {
+      $('link[id="feedback"]').attr('href', 'static/css/feedback-cnt.css');
+   }
+   feedback = fbk[n]
+   console.log('updateing feedback', n, feedback)
+}
+function init(){
+    $("#feedbacktypes").append(Object.keys(fbk).map(id => `<a class=fbk id=${id} onclick="fbk_set('${id}')">${id}</a> `).join(" "))
+   fbk_set('everything');
+   mkfeedback('p11_1R');
+}
     </script>
 
   </head>
 
   <body onload="init()">
     fbk settings: 
-      <a class="fbk select" id=orig onclick="fbk_set('orig')">orig</a> 
-      <a class=fbk id=cnt onclick="fbk_set('cnt')">cnt</a> 
-      <a class=fbk id=coin onclick="fbk_set('coin')">coin</a>
+      <div id="feedbacktypes"> </div>
     <br>
     <a href="#" onclick="fulltrial()">full</a> |
     feedback only:
