@@ -15,11 +15,14 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200412.1-pnts';
+const TASKVER = '20200413.1-pts+ani';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
 const HIGHCOST = 10;
+
+// animation
+const MAXCNTDUR=250 //ms
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -100,6 +103,46 @@ var instructions = {
     show_clickable_nav: true      
 }    
 
+/* feedback animation functions
+*/
+function countWin(net) {
+   // initial from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
+   let startTimestamp = null;
+   let obj = $('.net');
+   const duration = (net/CARDWIN)*MAXCNTDUR;
+   const g = 128; // green value
+   const c = 4; // exp scale coef
+   const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const cval = progress*net
+      const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
+      //  colors                     == 0 20 40 49
+      // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
+      const c_points =  Math.floor(cval)
+      obj.html("Net: " + c_points);
+      obj.css("background-color", "rgb(0," + g_color + ",0)");
+      if (progress < 1) {
+         window.requestAnimationFrame(step);
+      }
+   };
+   window.requestAnimationFrame(step);
+}
+function pictureRep(n, red) {
+   // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
+   // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
+   let ncol = 10;
+   var imgsrc='coin_sm.png';
+   if(n==0) { imgsrc='redcoin_sm.png'; n=red}
+
+   let img = "<img class='coin' src='static/images/"+ imgsrc +"'/>" 
+   let img_col = Array(ncol).fill(img).join("\t")
+   let imgx = Array(n%ncol).fill(img).join("\t")
+   let all = Array(Math.floor(n/ncol)).fill(img_col).concat(imgx).join("<br>")
+   return(all)
+}
+
+
 // sum all scores. used in choice, feedback, and debrief
 function totalPoints(){
   prevscores=jsPsych.data.get().select('score').sum();
@@ -117,7 +160,7 @@ function mktrial(l, r) {
     prompt: "<p>left or right</p>",
     on_start: function(trial) {
       trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
-	  (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
+        (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_finish: function(data){
       // which card was choosen?
@@ -142,21 +185,33 @@ function mktrial(l, r) {
 function mkfbk() { 
    return({
     type: 'html-keyboard-response',
+    // 20200413 - updated to use coins and animation
     stimulus: function(trial){
-	// setup win vs nowin feedback color and message
-	var prev=jsPsych.data.get().last(1).values()[0]
-	var msg=(prev.win > 0)?("+"+prev.win):"0";
-	var color=(prev.win > 0)?"win":"nowin";
-	var card = CARDS[prev.picked]
-	return(
-	  "<p class='feedback sym'>" + card.sym +"</p>" +
-	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
-	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-	  "<p class='feedback net "+color+"'>Net: " +
-		(prev.win - prev.cost) + "</p>"+
-          "<p class='feedback'>Total: " + totalPoints() + "</p>"+
-          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
-    )},
+      // setup win vs nowin feedback color and message
+      let prev=jsPsych.data.get().last(1).values()[0];
+      let msg=(prev.win > 0)?("+"+prev.win):"0";
+      let color=(prev.win > 0)?"win":"nowin";
+      let card = CARDS[prev.picked];
+      return(
+          "<p class='feedback sym'>" + card.sym +"</p><div class='wallet'>" +
+            pictureRep(prev.win, prev.cost) +
+            "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+            "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+            "<p class='feedback net "+color+"'>Net: " +
+            (prev.win - prev.cost) + "</p>"+
+            "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+            "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+      )
+   }, on_load: function(trial) {
+       let prev=jsPsych.data.get().last(1).values()[0]
+       let net = (prev.win - prev.cost)
+       if(net>0) {
+         countWin(net) 
+         setTimeout(function(){
+             $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
+         },300)
+       }
+   },
     // 20200410 - no autoadvance
     choices: [SPACE_KEY],
     //choices: jsPsych.NO_KEYS,
@@ -167,11 +222,11 @@ var feedback= mkfbk()
 var debrief={
     type: 'html-keyboard-response',
     stimulus: function(trial){
-	// setup win vs nowin feedback color and message
-	return(
+      // setup win vs nowin feedback color and message
+      return(
           "<p class='feedback'>Thanks for playing!<br>" +
           "You accumulated " + totalPoints() + " points!<br>" +
-	  "Push any key to finish!</p>")
+        "Push any key to finish!</p>")
 
     }
 }

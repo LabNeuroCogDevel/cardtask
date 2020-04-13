@@ -1,3 +1,5 @@
+.RData
+.RHistory
 participants.db
 .psiturk_history
 server.log

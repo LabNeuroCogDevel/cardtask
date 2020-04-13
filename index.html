@@ -37,65 +37,38 @@ see https://labneurocogdevel.github.io/cardtask
        'test_0R': new Card('0', 'red' , HIGHCOST, CARDWIN,  0),
        'test_0B': new Card('0', 'blue', LOWCOST , CARDWIN,  0),
         */
-var fbkstim = function(trial) {
-   // setup win vs nowin feedback color and message
-   var prev=jsPsych.data.get().last(1).values()[0]
-   var msg=(prev.win > 0)?("+"+prev.win):"0";
-   var color=(prev.win > 0)?"win":"nowin";
-   var card = CARDS[prev.picked]
-   return(
-      "<p class='feedback sym'>" + card.sym +"</p>" +
-      "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
-      "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-      "<p class='feedback net "+color+"'>Net: " +
-      (prev.win - prev.cost) + "</p>"+
-      "<p class='feedback'>Total: " + totalPoints() + "</p>"+
-      "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
-   )}
-
-// stolen from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
-const MAXCNTDUR=250 //ms
-function countWin(net) {
-   let startTimestamp = null;
-   let obj = $('.net');
-   const duration = (net/CARDWIN)*MAXCNTDUR;
-   const g = 128; // green value
-   const c = 4; // exp scale coef
-   const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const cval = progress*net
-      const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
-      //  colors                     == 0 20 40 49
-      // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
-      const c_points =  Math.floor(cval)
-      obj.html("Net: " + c_points);
-      obj.css("background-color", "rgb(0," + g_color + ",0)");
-      if (progress < 1) {
-         window.requestAnimationFrame(step);
-      }
-   };
-   window.requestAnimationFrame(step);
-}
-function pictureRep(n, red) {
-   // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
-   // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
-   let ncol = 10;
-   var imgsrc='coin_sm.png';
-   if(n==0) { imgsrc='redcoin_sm.png'; n=red}
-
-   let img = "<img class='coin' src='static/images/"+ imgsrc +"'/>" 
-   let img_col = Array(ncol).fill(img).join("\t")
-   let imgx = Array(n%ncol).fill(img).join("\t")
-   let all = Array(Math.floor(n/ncol)).fill(img_col).concat(imgx).join("<br>")
-   return(all)
-}
 
 fbk={}
-fbk['orig'] =  mkfbk()
+fbk['current'] =  mkfbk()
+      
+// original
+function originalfbk() {
+   return({
+    type: 'html-keyboard-response',
+    stimulus: function(trial){
+	// setup win vs nowin feedback color and message
+	var prev=jsPsych.data.get().last(1).values()[0]
+	var msg=(prev.win > 0)?("+"+prev.win):"0";
+	var color=(prev.win > 0)?"win":"nowin";
+	var card = CARDS[prev.picked]
+	return(
+	  "<p class='feedback sym'>" + card.sym +"</p>" +
+	  "<p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
+	  "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
+	  "<p class='feedback net "+color+"'>Net: " +
+		(prev.win - prev.cost) + "</p>"+
+          "<p class='feedback'>Total: " + totalPoints() + "</p>"+
+          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+    )},
+    // 20200410 - no autoadvance
+    choices: [SPACE_KEY],
+    //choices: jsPsych.NO_KEYS,
+    //trial_duration: FEEDBACKDUR,
+})}
+fbk['original'] = originalfbk()
 
 // show coins. vanish those that were paid
-fbk['coin'] = mkfbk()
+fbk['coin'] = originalfbk()
 fbk['coin'].stimulus= function(trial){
    // setup win vs nowin feedback color and message
    let prev=jsPsych.data.get().last(1).values()[0];
@@ -125,7 +98,7 @@ fbk['coin'].on_load = function(trial) {
 
 
 // change onload to count up points
-fbk['cnt'] = mkfbk()
+fbk['cnt'] = originalfbk()
 fbk['cnt'].on_load = function(trial) {
    let prev=jsPsych.data.get().last(1).values()[0]
    let net = (prev.win - prev.cost)
@@ -134,7 +107,7 @@ fbk['cnt'].on_load = function(trial) {
 
 
 // everything together
-fbk['everything'] = mkfbk()
+fbk['everything'] = originalfbk()
 fbk['everything'].stimulus= function(trial){
    // setup win vs nowin feedback color and message
    let prev=jsPsych.data.get().last(1).values()[0];
@@ -202,7 +175,7 @@ function fbk_set(n){
 }
 function init(){
     $("#feedbacktypes").append(Object.keys(fbk).map(id => `<a class=fbk id=${id} onclick="fbk_set('${id}')">${id}</a> `).join(" "))
-   fbk_set('everything');
+   fbk_set('current');
    mkfeedback('p11_1R');
 }
     </script>
