@@ -24,6 +24,7 @@ const HIGHCOST = 10;
 // animation
 const MAXCNTDUR=250 //ms
 const MAXRT=2000 // ms - time to zero points from slow RT
+const RTPENSTART=300 // when to start the penilty progress bar
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -199,7 +200,8 @@ function mktrial(l, r) {
         (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_load: function(trial) {
-       rt_progress() 
+       // start the rt bar counting down after 300 ms
+       setTimeout(rt_progress, RTPENSTART)
     },
     on_finish: function(data){
       // which card was choosen?
@@ -214,7 +216,8 @@ function mktrial(l, r) {
       if(data.win == 0) { 
         data.rtpen = 0
       } else {
-        data.rtpen = Math.min(Math.floor(data.rt/MAXRT*data.win), data.win-data.cost)
+        rt = Math.max(data.rt - RTPENSTART, 0) // give some lag
+        data.rtpen = Math.min(Math.floor(rt/MAXRT*data.win), data.win-data.cost)
       }
       data.score = data.win - data.cost - data.rtpen;
       data.picked = picked;
