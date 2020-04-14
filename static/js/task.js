@@ -42,9 +42,9 @@ const SPACE_KEY = 32; //progress feedback
 // initialize cards. probablility will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
-  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8),
-  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2), //flower
+  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8), //diamond
+  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1), //cross
    // phase 2 80/20/100
   'p82_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .8),
   'p82_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
@@ -54,7 +54,7 @@ const CARDS = {
   'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
   'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // for testing only
-  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0),
+  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
 };
 
@@ -213,18 +213,23 @@ function mktrial(l, r) {
       data.cost  = CARDS[picked].cost;
       data.p     = CARDS[picked].p;
       data.win   = CARDS[picked].score();
-      if(data.win == 0) { 
-        data.rtpen = 0
-      } else {
-        rt = Math.max(data.rt - RTPENSTART, 0) // give some lag
-        data.rtpen = Math.min(Math.floor(rt/MAXRT*data.win), data.win-data.cost)
-      }
+      data.rtpen = calc_rtpen(data.rt, data.win, data.cost)
       data.score = data.win - data.cost - data.rtpen;
       data.picked = picked;
       data.ignored = ignored;
     },
    left: l, right: r
 })}
+
+function calc_rtpen(rt, win, cost) { 
+  if(win == 0) { 
+    rtpen = 0
+  } else {
+    rt = Math.max(rt - RTPENSTART, 0) // give some lag
+    rtpen = Math.min(Math.floor(rt/MAXRT*win), win - cost)
+  }
+  return(rtpen)
+}
 
 // feedback trial informs player of their choice
 // use function to make b/c we might want to 

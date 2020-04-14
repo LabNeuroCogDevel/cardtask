@@ -147,8 +147,9 @@ function dummy(c){
          data.cost  = CARDS[c].cost
          data.p     = CARDS[c].p
          data.win   = CARDS[c].score()
-         data.score = data.win - data.cost;
-	 data.rtpen = 5;
+	 data.rt = $('#rt').val();
+	 data.rtpen = calc_rtpen(data.rt, data.win, data.cost);
+         data.score = data.win - data.cost - rtpen;
          data.picked = c;
       }})}
 function fulltrial() {
@@ -189,9 +190,10 @@ function init(){
     <br>
     <a href="#" onclick="fulltrial()">full</a> |
     feedback only:
-     <a href="#" onclick="mkfeedback('p11_1R')">1r</a> , 
-     <a href="#" onclick="mkfeedback('p11_1D')">1</a> ,
-     <a href="#" onclick="mkfeedback('test_0B')">0</a> 
+     <a href="#" onclick="mkfeedback('p11_1R')" style="color:red">✢</a> , 
+     <a href="#" onclick="mkfeedback('p11_1D')" style="color:blue">❖</a> ,
+     <a href="#" onclick="mkfeedback('test_0B')">💣</a> 
+     <input id="rt" type="input" value="1000" size="5" />
     <br><br>
     <div id="jsp"> </div>
 
