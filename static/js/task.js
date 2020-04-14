@@ -75,17 +75,11 @@ var get_info = {
 var final_thoughts = {
   type: 'survey-multi-choice',
   questions: [
-    {prompt: "How many times did the cost of ❖ change?", options: ["0", "1-3", "4+"],  name: "vchange"}, 
-    {prompt: "How many times did ❖ change how often it won?", options: ["0", "1-3", "4+"],  name: "pchange"}, 
-    {prompt: "<span color=red>✢</span> was the best choice", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
-	      
-  ],
-  on_finish: function(data){
-      // add task version
-      resp = JSON.parse(data.responses)
-      resp.taskver = TASKVER
-      data.responses=JSON.stringify(resp)
-  }
+    {prompt: "The cost of ❖ changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
+    {prompt: "How often ❖ won changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
+    {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
+    {prompt: "The left card was ", options: ["always better", "always worse", "neither"],  name: "sidethoughts"}, 
+  ]
 };
 
 // instruction slides
@@ -100,7 +94,25 @@ var instructions = {
     "You have to pay whether you win or lose.",
 
     "On each trial, pick between two cards using the arrow keys.<br>"+
-    "If your card wins, you get " + CARDWIN + " points!",
+    "If your card wins, you get as many as " + CARDWIN + " points!",
+
+    "<div>When a card gives you points<br>" +
+    "you'll see the cost of the card taken out of your winnings<div>" +
+    pictureRep(5,0) + "</div>",
+
+    // repeat same instruction slide, but now with poofed coins
+    "<div>When a card gives you points<br>" +
+    "you'll see the cost of the card taken out of your winnings" +
+    "<div> " +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/coin_sm.png">' +
+      '<img src="static/images/coin_sm.png">' +
+    "</div></div>",
+
+    "<div>A red coin means you lost points!<br>" +
+    pictureRep(0,1) + "</div>",
 
     "Your goal is to learn which cards give rewards most often<br>" +
     "so that you can get as many points as possible.",
@@ -255,7 +267,7 @@ function mkfbk() {
             pictureRep(prev.win-prev.rtpen, prev.cost) +
             "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
             "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-	     slowmsg +
+            slowmsg +
             "<p class='feedback net "+color+"'>Net: " + prev.score + "</p>"+
             "<p class='feedback'>Total: " + totalPoints() + "</p>" +
             "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
@@ -266,17 +278,20 @@ function mkfbk() {
        // count up if we have more than 0 points to count
        if(net>0) { countWin(net) }
        // remove any coins we may have paid
-       if(net>=0) {
-         setTimeout(function(){
-             $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
-         },250)
-       }
+       if(net>=0) {coin_poof(prev.cost)}
    },
     // 20200410 - no autoadvance
     choices: [SPACE_KEY],
     //choices: jsPsych.NO_KEYS,
     //trial_duration: FEEDBACKDUR,
 })}
+
+function coin_poof(n){
+    console.log('coin poof!',n)
+    setTimeout(function(){
+       $('img.coin').slice(0,n).attr('src', 'static/images/poof_gold_sm.gif')
+    }, 250)
+}
 
 var feedback= mkfbk()
 var debrief={
