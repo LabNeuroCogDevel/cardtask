@@ -1,8 +1,9 @@
 .RData
-.RHistory
+.Rhistory
 participants.db
 .psiturk_history
 server.log
 __pycache__
 static/js/jspsych/examples/
 *csv
+node_modules

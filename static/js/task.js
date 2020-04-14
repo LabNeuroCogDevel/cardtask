@@ -15,7 +15,7 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200413.1-pts+ani';
+const TASKVER = '20200413.2-rtpen+endQ';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -23,6 +23,7 @@ const HIGHCOST = 10;
 
 // animation
 const MAXCNTDUR=250 //ms
+const MAXRT=2000 // ms - time to zero points from slow RT
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -70,6 +71,21 @@ var get_info = {
       data.responses=JSON.stringify(resp)
   }
 };
+var final_thoughts = {
+  type: 'survey-multi-choice',
+  questions: [
+    {prompt: "How many times did the cost of ❖ change?", options: ["0", "1-3", "4+"],  name: "vchange"}, 
+    {prompt: "How many times did ❖ change how often it won?", options: ["0", "1-3", "4+"],  name: "pchange"}, 
+    {prompt: "<span color=red>✢</span> was the best choice", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
+	      
+  ],
+  on_finish: function(data){
+      // add task version
+      resp = JSON.parse(data.responses)
+      resp.taskver = TASKVER
+      data.responses=JSON.stringify(resp)
+  }
+};
 
 // instruction slides
 var instructions = {       
@@ -87,6 +103,9 @@ var instructions = {
 
     "Your goal is to learn which cards give rewards most often<br>" +
     "so that you can get as many points as possible.",
+
+    "Go as fast as you can!<br>"+
+    "You lose more of your card winnings the slower you go.",
 
     "But be careful!<br>" +
     "Sometimes the chances of a card giving you a reward will change.",
@@ -133,7 +152,7 @@ function pictureRep(n, red) {
    // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
    let ncol = 10;
    var imgsrc='coin_sm.png';
-   if(n==0) { imgsrc='redcoin_sm.png'; n=red}
+   if(n<=0) { imgsrc='redcoin_sm.png'; n=red}
 
    let img = "<img class='coin' src='static/images/"+ imgsrc +"'/>" 
    let img_col = Array(ncol).fill(img).join("\t")
@@ -149,6 +168,23 @@ function totalPoints(){
   cur_score = INITPOINTS + prevscores;
   return(cur_score)
 }
+function rt_progress(){
+
+   let startTimestamp = null;
+   let obj = $('.rtbar');
+   const duration = MAXRT;
+   const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const time = Math.min(timestamp - startTimestamp, MAXRT);
+      const color = (time<MAXRT/5)?"green":(time<MAXRT/2)?"orange":"red";
+      obj.css("width", (1- time/MAXRT)*100 + "%");
+      obj.css("background-color", color);
+      if (time < MAXRT) {
+         window.requestAnimationFrame(step);
+      }
+   };
+   window.requestAnimationFrame(step);
+}
 
 // make a trial from 2 card index keys
 function mktrial(l, r) {
@@ -157,10 +193,13 @@ function mktrial(l, r) {
     type: 'html-keyboard-response',
     stimulus: CARDS[l].add(CARDS[r]),
     choices: [LEFT_KEY, RIGHT_KEY],
-    prompt: "<p>left or right</p>",
+    prompt: "<p>left or right</p><div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>",
     on_start: function(trial) {
       trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
         (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
+    },
+    on_load: function(trial) {
+       rt_progress() 
     },
     on_finish: function(data){
       // which card was choosen?
@@ -172,7 +211,12 @@ function mktrial(l, r) {
       data.cost  = CARDS[picked].cost;
       data.p     = CARDS[picked].p;
       data.win   = CARDS[picked].score();
-      data.score = data.win - data.cost;
+      if(data.win == 0) { 
+        data.rtpen = 0
+      } else {
+        data.rtpen = Math.min(Math.floor(data.rt/MAXRT*data.win), data.win-data.cost)
+      }
+      data.score = data.win - data.cost - data.rtpen;
       data.picked = picked;
       data.ignored = ignored;
     },
@@ -192,13 +236,18 @@ function mkfbk() {
       let msg=(prev.win > 0)?("+"+prev.win):"0";
       let color=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
+      if(prev.win>0) {
+       slowmsg = "<p class='feedback nowin'>Slow: -" + prev.rtpen + "</p>"
+      } else {
+       slowmsg = ""
+      }
       return(
           "<p class='feedback sym'>" + card.sym +"</p><div class='wallet'>" +
-            pictureRep(prev.win, prev.cost) +
+            pictureRep(prev.win-prev.rtpen, prev.cost) +
             "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
             "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-            "<p class='feedback net "+color+"'>Net: " +
-            (prev.win - prev.cost) + "</p>"+
+	     slowmsg +
+            "<p class='feedback net "+color+"'>Net: " + prev.score + "</p>"+
             "<p class='feedback'>Total: " + totalPoints() + "</p>" +
             "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
@@ -278,6 +327,6 @@ if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
 // add feedback after each trial
 trials = trials.flatMap((k) => [k, feedback]);
 
-var timeline = [get_info, instructions, trials, debrief].flat()
+var timeline = [get_info, instructions, trials, final_thoughts, debrief].flat()
 
 /* 'timeline' used in templates/exp.html */
