@@ -12,11 +12,9 @@ Each trial is a choice between 2 of 3 total cards (✿, ❖, ✢).
     - 100/100/100: ✢ = ✿ = ❖
 
 ## TODO
- - [ ] style feedback
  - [ ] write consent page (`templates/consent.html`)
  - [ ] Jitter block/phase lengths
- - [ ] slower feedback for first n trials?
- - [ ] testing (with jest?)
+ - [ ] test code (with jest?)
 
 ## Hacking
  - install psiturk from master branch

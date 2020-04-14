@@ -239,6 +239,7 @@ function mkfbk() {
       let msg=(prev.win > 0)?("+"+prev.win):"0";
       let color=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
+
       if(prev.win>0) {
        slowmsg = "<p class='feedback nowin'>Slow: -" + prev.rtpen + "</p>"
       } else {
@@ -256,12 +257,14 @@ function mkfbk() {
       )
    }, on_load: function(trial) {
        let prev=jsPsych.data.get().last(1).values()[0]
-       let net = (prev.win - prev.cost)
-       if(net>0) {
-         countWin(net) 
+       let net = prev.score
+       // count up if we have more than 0 points to count
+       if(net>0) { countWin(net) }
+       // remove any coins we may have paid
+       if(net>=0) {
          setTimeout(function(){
              $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
-         },300)
+         },250)
        }
    },
     // 20200410 - no autoadvance
