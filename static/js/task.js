@@ -76,7 +76,7 @@ var final_thoughts = {
   type: 'survey-multi-choice',
   questions: [
     {prompt: "The cost of ❖ changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
-    {prompt: "How often ❖ won changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
+    {prompt: "How often ❖ gave a reward changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
     {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
     {prompt: "The left card was ", options: ["always better", "always worse", "neither"],  name: "sidethoughts"}, 
   ]

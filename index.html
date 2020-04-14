@@ -192,15 +192,21 @@ function init(){
   </head>
 
   <body onload="init()">
-    <div id="feedbacktypes"> </div>
-    <a href="#" onclick="fulltrial()">full</a>,  
-    <a href="#" onclick="instruction()">instr</a>,
-    <a href="#" onclick="survey()">survey</a> 
-    <br>
-    <a href="#" onclick="mkfeedback('p11_1R')" style="color:red">✢</a> , 
-    <a href="#" onclick="mkfeedback('p11_1D')" style="color:blue">❖</a> ,
-    <a href="#" onclick="mkfeedback('test_0B')">💣</a> 
-    <input id="rt" type="input" value="1000" size="5" />
+    <div> links:
+      <a href="https://github.com/LabNeuroCogDevel/cardtask"> repo</a> |
+      <a href="https://lncdturk.herokuapp.com/"> heroku</a>
+    </div>
+    <div id="feedbacktypes">settings: </div>
+    <div> trials:
+      <a href="#" onclick="fulltrial()"> ❖ vs ✢</a> |
+      <a href="#" onclick="instruction()">instr</a> |
+      <a href="#" onclick="survey()">survey</a> 
+    <div> feedback:
+      <a href="#" onclick="mkfeedback('p11_1R')" style="color:red">✢</a> , 
+      <a href="#" onclick="mkfeedback('p11_1D')" style="color:blue">❖</a> ,
+      <a href="#" onclick="mkfeedback('test_0B')">💣</a> 
+      rt: <input id="rt" type="input" value="1000" size="5" />
+    </div>
     <br><br>
     <div id="jsp"> </div>
 
