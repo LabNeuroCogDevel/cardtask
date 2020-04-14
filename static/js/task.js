@@ -15,7 +15,7 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200413.2-rtpen+endQ';
+const TASKVER = '20200414.1-moreQ';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -77,8 +77,9 @@ var final_thoughts = {
   questions: [
     {prompt: "The cost of ❖ changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
     {prompt: "How often ❖ gave a reward changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
-    {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
     {prompt: "The left card was ", options: ["always better", "always worse", "neither"],  name: "sidethoughts"}, 
+    {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "often", "rarely", "never"],  name: "redthoughts"}, 
+    {prompt: "I choose wrong by going too fast", options: ["often", "rarely", "never"],  name: "speed"}, 
   ]
 };
 
