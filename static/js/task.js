@@ -15,7 +15,7 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200413.2-rtpen+endQ';
+const TASKVER = '20200414.1-moreQ';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -42,9 +42,9 @@ const SPACE_KEY = 32; //progress feedback
 // initialize cards. probablility will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
-  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8),
-  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2), //flower
+  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8), //diamond
+  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1), //cross
    // phase 2 80/20/100
   'p82_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .8),
   'p82_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
@@ -54,7 +54,7 @@ const CARDS = {
   'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
   'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // for testing only
-  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0),
+  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
 };
 
@@ -75,17 +75,12 @@ var get_info = {
 var final_thoughts = {
   type: 'survey-multi-choice',
   questions: [
-    {prompt: "How many times did the cost of ❖ change?", options: ["0", "1-3", "4+"],  name: "vchange"}, 
-    {prompt: "How many times did ❖ change how often it won?", options: ["0", "1-3", "4+"],  name: "pchange"}, 
-    {prompt: "<span color=red>✢</span> was the best choice", options: ["always", "most of the time", "rarely", "never"],  name: "redthoughts"}, 
-	      
-  ],
-  on_finish: function(data){
-      // add task version
-      resp = JSON.parse(data.responses)
-      resp.taskver = TASKVER
-      data.responses=JSON.stringify(resp)
-  }
+    {prompt: "The cost of ❖ changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
+    {prompt: "How often ❖ gave a reward changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
+    {prompt: "The left card was ", options: ["always better", "always worse", "neither"],  name: "sidethoughts"}, 
+    {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "often", "rarely", "never"],  name: "redthoughts"}, 
+    {prompt: "I choose wrong by going too fast", options: ["often", "rarely", "never"],  name: "speed"}, 
+  ]
 };
 
 // instruction slides
@@ -100,7 +95,25 @@ var instructions = {
     "You have to pay whether you win or lose.",
 
     "On each trial, pick between two cards using the arrow keys.<br>"+
-    "If your card wins, you get " + CARDWIN + " points!",
+    "If your card wins, you get as many as " + CARDWIN + " points!",
+
+    "<div>When a card gives you points<br>" +
+    "you'll see the cost of the card taken out of your winnings<div>" +
+    pictureRep(5,0) + "</div>",
+
+    // repeat same instruction slide, but now with poofed coins
+    "<div>When a card gives you points<br>" +
+    "you'll see the cost of the card taken out of your winnings" +
+    "<div> " +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/poof_gold_sm.gif">' +
+      '<img src="static/images/coin_sm.png">' +
+      '<img src="static/images/coin_sm.png">' +
+    "</div></div>",
+
+    "<div>A red coin means you lost points!<br>" +
+    pictureRep(0,1) + "</div>",
 
     "Your goal is to learn which cards give rewards most often<br>" +
     "so that you can get as many points as possible.",
@@ -213,18 +226,23 @@ function mktrial(l, r) {
       data.cost  = CARDS[picked].cost;
       data.p     = CARDS[picked].p;
       data.win   = CARDS[picked].score();
-      if(data.win == 0) { 
-        data.rtpen = 0
-      } else {
-        rt = Math.max(data.rt - RTPENSTART, 0) // give some lag
-        data.rtpen = Math.min(Math.floor(rt/MAXRT*data.win), data.win-data.cost)
-      }
+      data.rtpen = calc_rtpen(data.rt, data.win, data.cost)
       data.score = data.win - data.cost - data.rtpen;
       data.picked = picked;
       data.ignored = ignored;
     },
    left: l, right: r
 })}
+
+function calc_rtpen(rt, win, cost) { 
+  if(win == 0) { 
+    rtpen = 0
+  } else {
+    rt = Math.max(rt - RTPENSTART, 0) // give some lag
+    rtpen = Math.min(Math.floor(rt/MAXRT*win), win - cost)
+  }
+  return(rtpen)
+}
 
 // feedback trial informs player of their choice
 // use function to make b/c we might want to 
@@ -250,7 +268,7 @@ function mkfbk() {
             pictureRep(prev.win-prev.rtpen, prev.cost) +
             "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
             "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-	     slowmsg +
+            slowmsg +
             "<p class='feedback net "+color+"'>Net: " + prev.score + "</p>"+
             "<p class='feedback'>Total: " + totalPoints() + "</p>" +
             "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
@@ -261,17 +279,20 @@ function mkfbk() {
        // count up if we have more than 0 points to count
        if(net>0) { countWin(net) }
        // remove any coins we may have paid
-       if(net>=0) {
-         setTimeout(function(){
-             $('img.coin').slice(0,prev.cost).attr('src', 'static/images/poof_gold_sm.gif')
-         },250)
-       }
+       if(net>=0) {coin_poof(prev.cost)}
    },
     // 20200410 - no autoadvance
     choices: [SPACE_KEY],
     //choices: jsPsych.NO_KEYS,
     //trial_duration: FEEDBACKDUR,
 })}
+
+function coin_poof(n){
+    console.log('coin poof!',n)
+    setTimeout(function(){
+       $('img.coin').slice(0,n).attr('src', 'static/images/poof_gold_sm.gif')
+    }, 250)
+}
 
 var feedback= mkfbk()
 var debrief={
