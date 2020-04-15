@@ -15,7 +15,7 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200414.1-moreQ';
+const TASKVER = '20200415.1-save';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -228,6 +228,7 @@ function mktrial(l, r) {
       data.win   = CARDS[picked].score();
       data.rtpen = calc_rtpen(data.rt, data.win, data.cost)
       data.score = data.win - data.cost - data.rtpen;
+      data.sym   = CARDS[picked].sym;
       data.picked = picked;
       data.ignored = ignored;
     },
@@ -280,6 +281,10 @@ function mkfbk() {
        if(net>0) { countWin(net) }
        // remove any coins we may have paid
        if(net>=0) {coin_poof(prev.cost)}
+       // save data every feedback if we have uniqueID from psiturk
+       if(typeof uniqueId !== 'undefined'){
+          psiturk.saveData({ success: function() {if(DEBUG){console.log('saved to psiturk!')}}});
+       }
    },
     // 20200410 - no autoadvance
     choices: [SPACE_KEY],
@@ -288,7 +293,7 @@ function mkfbk() {
 })}
 
 function coin_poof(n){
-    console.log('coin poof!',n)
+    if(DEBUG) {console.log('coin poof!',n)}
     setTimeout(function(){
        $('img.coin').slice(0,n).attr('src', 'static/images/poof_gold_sm.gif')
     }, 250)

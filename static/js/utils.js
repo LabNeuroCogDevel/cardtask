@@ -49,4 +49,4 @@ function boolpercent(arr) {
 }
 
 // export for testing
-module.exports = { Card };
+if(typeof module !== 'undefined') { module.exports = { Card }; }
