@@ -15,7 +15,7 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200415.1-save';
+const TASKVER = '20200416.1-2060';
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -56,6 +56,15 @@ const CARDS = {
    // for testing only
   'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
+   // 60 instead of 80 - 20200416
+   // phase 1 20/60/100
+  'p26_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
+  'p26_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .6),
+  'p26_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+   // phase 2 60/20/100
+  'p62_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .6),
+  'p62_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
+  'p62_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
 };
 
 // initial trial - get name and age
@@ -307,7 +316,7 @@ var debrief={
       return(
           "<p class='feedback'>Thanks for playing!<br>" +
           "You accumulated " + totalPoints() + " points!<br>" +
-        "Push any key to finish!</p>")
+        "<b><font size='larger'>Push any key to finish!</font></b></p>")
 
     }
 }
@@ -348,8 +357,24 @@ p11 = [].concat(
   mkrep('p11_1R','p11_1F', nhigh*2),
   mkrep('p11_1F','p11_1R', nhigh*2))
 
+// 20200416 - 20/60 and 60/20 blocks
+p26 = [].concat(
+  mkrep('p26_2F','p26_8D', nlow ),
+  mkrep('p26_8D','p26_2F', nlow ),
+  mkrep('p26_1R','p26_2F', nhigh),
+  mkrep('p26_2F','p26_1R', nhigh),
+  mkrep('p26_1R','p26_8D', nhigh),
+  mkrep('p26_8D','p26_1R', nhigh))
+p62 = [].concat(
+  mkrep('p62_2D','p62_8F', nlow ),
+  mkrep('p62_8F','p62_2D', nlow ),
+  mkrep('p62_1R','p62_2D', nhigh),
+  mkrep('p62_2D','p62_1R', nhigh),
+  mkrep('p62_1R','p62_8F', nhigh),
+  mkrep('p62_8F','p62_1R', nhigh))
+
 // combine all
-trials=[p28, p82, p28, p82, p11].
+trials=[p26, p62, p26, p62, p11].
   map( (a) => jsPsych.
   randomization.shuffle(a)).flat()
 
