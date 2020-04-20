@@ -5,12 +5,16 @@ class Card {
       this.pays=pays; this.p=p;
    }
    html(side) {
+     // nonbreaking space to preserve alignment
+     let sym = this.sym==""?"&nbsp;":this.sym;
+     let cost= this.cost!=0?("-"+this.cost):"&nbsp;";
+
      return('<div class="card-container" id="card-' + this.sym +'">' +
 	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
-            '<div class="card '+
-             this.color +' '+ side + '">' +
-              this.sym +'</div>'+
-            '<p> -'+ this.cost + '</p></div>');
+            '<div class="card '+ this.color +' '+ side + '">' + sym + '</div>' +
+	    // if cost is zero, dont display anything
+            '<p> '+ cost + '</p>' + 
+            '</div>');
   }
   score(){
      return(((this.p - Math.random(1)) > 0) * this.pays);

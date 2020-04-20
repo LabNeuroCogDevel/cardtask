@@ -3,19 +3,20 @@
  *  
  *  task.js -  makes a trial `timeline` global to be used by jsPsych
  *  see also:
- *    utils.js           -  "Card" class definition
+ *    utils.js           - "Card" class definition
  *    templates/exp.html - `timeline` usage. jsPsych+psiTurk
  *    t/cards.js         - minimal tests
  *
  */
 // starting value should be > 100, the most expensive card
+const TASKVER = '20200420.2-fixslots';
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
+const SLOTORDER = ['✿', '✢',  '❖'];
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200420.1-noRTbar';
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 
 const CARDWIN = 50;
@@ -35,12 +36,14 @@ const RTPENSTART=300 // when to start the penilty progress bar
 //keys
 // see https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
 const LEFT_KEY = 37;
+const DOWN_KEY = 40;
 const RIGHT_KEY = 39;   
 const SPACE_KEY = 32; //progress feedback
+const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 
 /* Card class defined in utils */
 
-// initialize cards. probablility will change
+// initialize cards. probability will change
 const CARDS = {
    // phase 1 20/80/100
   'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2), //flower
@@ -66,6 +69,8 @@ const CARDS = {
   'p62_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .6),
   'p62_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
   'p62_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+   // 20200420 no card
+  'empty': new Card('', 'white' , 0, 0, 0),
 };
 
 // initial trial - get name and age
@@ -103,8 +108,27 @@ var instructions = {
 
     'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
     "You have to pay whether you win or lose.",
+	
+    "<div>Blue cards cost " + LOWCOST + 
+        '<div class="threecards">'+
+           CARDS['p11_1F'].html('left')+
+           CARDS['empty'].html('center')+
+           CARDS['p11_1D'].html('right')+
+        '</div>' +
+    "</div>",
+
+    "<div>Red cards cost " + HIGHCOST + 
+        '<div class="threecards">'+
+           CARDS['empty'].html('left')+
+           CARDS['p11_1R'].html('center')+
+           CARDS['empty'].html('right')+
+        '</div>'+
+    "</div>",
 
     "On each trial, pick between two cards using the arrow keys.<br>"+
+    "<font size=larger>←</font> for the left card, " +
+      "<font size=larger>↓</font> for center, "+
+      "<font size=larger>→</font> for right<br>"+
     "If your card wins, you get as many as " + CARDWIN + " points!",
 
     "<div>When a card gives you points<br>" +
@@ -136,7 +160,7 @@ var instructions = {
 
     '<div>Ready? <br>The game starts after this page<br><br>' +
     '<br>Remember, hit<br>'+
-    'the <b>left or right arrow key</b> to pick a card<br>' +
+    'the <b>left, down (center), or right arrow key</b> to pick a card<br>' +
     'and <b>spacebar</b> to continue' +
     '</div>',
    
@@ -209,6 +233,67 @@ function rt_progress(){
    };
    window.requestAnimationFrame(step);
 }
+function mktrial_fixloc(c1, c2) {
+    c1c=CARDS[c1];
+    c2c=CARDS[c2];
+    // 20200420 fixed positions based on symbol
+    let pos1=SLOTORDER.indexOf(c1c.sym)
+    let pos2=SLOTORDER.indexOf(c2c.sym)
+    let twocards=[c1, c2]; // for index of index later
+    let avail_keys = [SLOTKEYS[pos1], SLOTKEYS[pos2]];
+    disp = [CARDS['empty'], CARDS['empty'], CARDS['empty']];
+    disp[pos1] = c1c;
+    disp[pos2] = c2c;
+    let stim = '<div class="threecards">'+
+           disp[0].html('left')+
+           disp[1].html('center')+
+           disp[2].html('right')+
+           '</div>'
+
+
+  return({
+    type: 'html-keyboard-response',
+    stimulus: stim,
+    choices: avail_keys,
+    prompt: "<p>left, down, or right</p>" +
+    (USERTBAR?"<div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>":""),
+    on_start: function(trial) {
+      trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
+        (DEBUG?("<span class='debug'>" + c1 + " or " + c2 +"</span>"):"")
+    },
+    on_load: function(trial) {
+      // start the rt bar counting down after 300 ms
+      // but only if we want it (disabled 20200420)
+      if(USERTBAR) { setTimeout(rt_progress, RTPENSTART)}
+    },
+    on_finish: function(data){
+
+      if(DEBUG) {
+	  console.log(c1, pos1, c2, pos2, avail_keys,
+                      data.key_press, twocards);
+      }
+      // which card was chosen? from key press
+      idx_picked = avail_keys.indexOf(data.key_press);
+      // binary choice, make ignored opposite of picked
+      idx_ignored = idx_picked==0?1:0;
+      picked = twocards[idx_picked];
+      ignored = twocards[idx_ignored];
+      
+      // add score
+      data.cost   = CARDS[picked].cost;
+      data.p      = CARDS[picked].p;
+      data.win    = CARDS[picked].score();
+      data.rtpen  = calc_rtpen(data.rt, data.win, data.cost)
+      data.score  = data.win - data.cost - data.rtpen;
+      data.sym    = CARDS[picked].sym;
+      data.picked = picked;
+      if(DEBUG) {console.log(picked, data.sym)}
+    },
+   // keep the cards passed in the data?
+   c1: c1,
+   c2: c2
+})}
+
 
 // make a trial from 2 card index keys
 function mktrial(l, r) {
@@ -216,7 +301,7 @@ function mktrial(l, r) {
   return({
     type: 'html-keyboard-response',
     stimulus: CARDS[l].add(CARDS[r]),
-    choices: [LEFT_KEY, RIGHT_KEY],
+    choices: [LEFT_KEY, DOWN_KEY, RIGHT_KEY],
     prompt: "<p>left or right</p>" +
     (USERTBAR?"<div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>":""),
     on_start: function(trial) {
@@ -229,7 +314,7 @@ function mktrial(l, r) {
       if(USERTBAR) { setTimeout(rt_progress, RTPENSTART)}
     },
     on_finish: function(data){
-      // which card was choosen?
+      // which card was chosen?
       if(data.key_press==LEFT_KEY){picked=l; ignored=r;}
       else                        {picked=r; ignored=l;}
       // add score
@@ -328,7 +413,8 @@ var debrief={
 //phase1 = BLOCKLEN - BLOCKJITTER + Math.random(BLOCKJITTER*2) 
 //phase2 = (BLOCKLEN - phase1)/BLOCKLEN 
 function mkrep(l,r,n) {
- return(jsPsych.randomization.repeat(mktrial(l,r), n, 0))
+ //return(jsPsych.randomization.repeat(mktrial(l,r), n, 0))
+ return(jsPsych.randomization.repeat(mktrial_fixloc(l,r), n, 0))
 }
 
 // make each phase

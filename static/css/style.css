@@ -8,7 +8,7 @@ body {
 }
 
 /* cards */
-.twocards {
+.twocards .threecards {
    display: block;
    width: 80%;
    min-height: 220px;
@@ -31,8 +31,10 @@ body {
 }
 .blue { background-color: #4371C3; }
 .red { background-color: red; }
+.white { background-color: white; }
 .left { align: left;}
 .right { align: right;}
+.center { align: center;}
 
 /* audit */
 .debug {background-color: orange;}
