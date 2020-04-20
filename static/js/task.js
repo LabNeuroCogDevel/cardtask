@@ -15,7 +15,8 @@ const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const DEBUG = 0; // change 1=>0
-const TASKVER = '20200416.1-2060';
+const TASKVER = '20200420.1-noRTbar';
+const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -97,7 +98,7 @@ var instructions = {
     type: 'instructions',     
     pages: [
     '<div>In this game, you will use points to buy a card.<br>' +
-    'Some cards pay out more often then others.<br>' +
+    'Some cards pay out more often than others.<br>' +
     'Try to get as many points as you can!</div>',
 
     'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
@@ -216,14 +217,16 @@ function mktrial(l, r) {
     type: 'html-keyboard-response',
     stimulus: CARDS[l].add(CARDS[r]),
     choices: [LEFT_KEY, RIGHT_KEY],
-    prompt: "<p>left or right</p><div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>",
+    prompt: "<p>left or right</p>" +
+    (USERTBAR?"<div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>":""),
     on_start: function(trial) {
       trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
         (DEBUG?("<span class='debug'>" + l + " or " + r +"</span>"):"")
     },
     on_load: function(trial) {
-       // start the rt bar counting down after 300 ms
-       setTimeout(rt_progress, RTPENSTART)
+      // start the rt bar counting down after 300 ms
+      // but only if we want it (disabled 20200420)
+      if(USERTBAR) { setTimeout(rt_progress, RTPENSTART)}
     },
     on_finish: function(data){
       // which card was choosen?
