@@ -8,6 +8,13 @@
  *    index.html         - debugging and example page
  *    t/cards.js         - minimal tests
  *
+ * 20200421 - Notes
+ *   red coin -> x through coin
+ *   x coin -> instead of poof
+ *   you have 2 seconds to respond you wont win any points
+ *   add each feedback to instructions
+ *   feedback has card
+ *    coins + winnings
  */
 // starting value should be > 100, the most expensive card
 const TASKVER = '20200421.1-touch';
@@ -15,7 +22,7 @@ const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
-const CARDFREQ = [.8, .2];  // low/high pair, any/red
+const CARDFREQ = [.6, .4];  // low/high pair, any/red //20200421 inc 40% from 20%
 const SLOTORDER = ['✿', '✢',  '❖'];
 const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
@@ -112,7 +119,7 @@ var instructions = {
     'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
     "You have to pay whether you win or lose.",
 	
-    "<div>Blue and green cards cost " + LOWCOST + 
+    "<div>Blue and green cards cost " + LOWCOST + 'point' +
         '<div class="threecards">'+
            CARDS['p11_1F'].html('left')+
            CARDS['empty'].html('center')+
@@ -120,7 +127,7 @@ var instructions = {
         '</div>' +
     "</div>",
 
-    "<div>Red cards cost " + HIGHCOST + 
+    "<div>Red cards cost " + HIGHCOST + ' points' +
         '<div class="threecards">'+
            CARDS['empty'].html('left')+
            CARDS['p11_1R'].html('center')+
@@ -128,6 +135,7 @@ var instructions = {
         '</div>'+
     "</div>",
 
+    // NB. maybe don't put total wins (20200421BL)
     "On each trial, pick between two cards using the arrow keys.<br>"+
     "<font size=larger>←</font> for the left card, " +
       "<font size=larger>↓</font> for center, "+
@@ -203,7 +211,7 @@ function pictureRep(n, red) {
    // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
    let ncol = 10;
    var imgsrc='coin_sm.png';
-   if(n<=0) { imgsrc='redcoin_sm.png'; n=red}
+   if(n<=0) { imgsrc='nocoin_sm.png'; n=red}
 
    let img = "<img class='coin' src='static/images/"+ imgsrc +"'/>" 
    let img_col = Array(ncol).fill(img).join("\t")
