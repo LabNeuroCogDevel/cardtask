@@ -153,6 +153,8 @@ function dummy(c){
          data.score = data.win - data.cost - data.rtpen;
          data.picked = c;
 	 data.color = CARDS[c].color;
+	 data.sym = CARDS[c].sym;
+	 data.side_idx = 1;
       }})}
 function fulltrial() {
    t = mktrial_fixloc("p11_1I", "p11_1H")

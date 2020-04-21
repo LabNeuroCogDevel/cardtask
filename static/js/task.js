@@ -17,7 +17,7 @@
  *    coins + winnings
  */
 // starting value should be > 100, the most expensive card
-const TASKVER = '20200421.1-touch';
+const TASKVER = '20200421.2-feedback';
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
@@ -261,7 +261,6 @@ function rt_progress(){
    window.requestAnimationFrame(step);
 }
 
-
 function mktrial_fixloc(c1, c2) {
     c1c=CARDS[c1];
     c2c=CARDS[c2];
@@ -307,6 +306,8 @@ function mktrial_fixloc(c1, c2) {
       if(data.key_press === null) {
           picked = 'empty';
 	  ignored = 'both';
+          data.side_idx = null;
+          data.side = null;
       } else {
           // which card was chosen? from key press
           idx_picked = avail_keys.indexOf(data.key_press);
@@ -314,6 +315,8 @@ function mktrial_fixloc(c1, c2) {
           idx_ignored = idx_picked==0?1:0;
           picked = twocards[idx_picked];
           ignored = twocards[idx_ignored];
+	  // what side did we pick
+	  data.side_idx = SLOTORDER.indexOf(CARDS[picked].sym)
       }
       
       // add score
@@ -396,6 +399,22 @@ function mkfbk() {
       let msg=(prev.win > 0)?("+"+prev.win):"0";
       let wincolor=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
+      
+      // make small cards all white. replace one of empties with picked
+	console.log(prev.side_idx)
+      if(prev.side_idx===null) {
+	  disp = ["Respond faster to win points!"];
+	  console.log('is null', prev.side_idx)
+      } else {
+          disp = [
+         	"<div class='card-container'> <div class='small card white left'   " + onclick + ">&nbsp;</div></div>",
+         	"<div class='card-container'> <div class='small card white center' " + onclick + ">&nbsp;</div></div>",
+         	"<div class='card-container'> <div class='small card white right'  " + onclick + ">&nbsp;</div></div>"];
+          side = ['left','center','right'][prev.side_idx];
+          disp[prev.side_idx] = "<div class='card-container'><div class='small card " +
+                                 card.color + " " + side + "' " + onclick +
+        	                ">"+prev.sym+"</div></div>";
+      }
 
       // 20200421 - when no rtpen not in feedback, no need for this
       /*if(prev.win>0) {
@@ -404,8 +423,7 @@ function mkfbk() {
        slowmsg = ""
       }*/
       return(
-          "<div class='card small " + card.color + "' " +
-	      onclick + ">" + card.sym + "</div>" +
+          "<div class='twocards' >" + disp.join("") + "</div>" +
           "<div class='wallet'>" +
             pictureRep(prev.win-prev.rtpen, prev.cost) +
           "</div>"+
