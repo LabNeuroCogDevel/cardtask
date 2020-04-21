@@ -29,7 +29,9 @@ const SLOTOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
 const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
 const DEBUG = 1; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
+
 const RTPEN = 0; // 20200421 - disable RT penalty
+const RTMAX = 2000; //ms. how long to wait before auto-progressing. 0 = off
 
 const ALLOWTOUCH = 1; //20200421 - enable touching symbol
 
@@ -88,8 +90,8 @@ const CARDS = {
   'p62_2I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .2),
   'p62_8S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .6),
   'p62_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
-   // 20200420 no card
-  'empty': new Card('', 'white' , 0, 0, 0),
+   // 20200420 no card. used for empty display AND empty feedback
+  'empty': new Card('', 'white' , LOWCOST, 0, 0),
    // for testing only
   'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
@@ -178,7 +180,7 @@ var instructions = {
     "so that you can get as many points as possible.",
 
     "Go as fast as you can!<br>"+
-    "You lose more of your card winnings the slower you go.",
+    "If you take too long you won't win anything!",
 
     "But be careful!<br>" +
     "Sometimes the chances of a card giving you a reward will change.",
@@ -275,11 +277,14 @@ function mktrial_fixloc(c1, c2) {
            disp[2].html('right', SLOTKEYS[2])+
            '</div>'
 
+    let trialdur = RTMAX===0?null:RTMAX;
 
   return({
     type: 'html-keyboard-response',
     stimulus: stim,
     choices: avail_keys,
+    trial_duration: trialdur,
+    //TODO: use only the available options?
     prompt: "<p>left, down, or right</p>" +
     (USERTBAR?"<div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>":""),
     on_start: function(trial) {
@@ -297,13 +302,17 @@ function mktrial_fixloc(c1, c2) {
 	  console.log(c1, pos1, c2, pos2, avail_keys,
                       data.key_press, twocards);
       }
-      //console.log(data.key_press)
-      // which card was chosen? from key press
-      idx_picked = avail_keys.indexOf(data.key_press);
-      // binary choice, make ignored opposite of picked
-      idx_ignored = idx_picked==0?1:0;
-      picked = twocards[idx_picked];
-      ignored = twocards[idx_ignored];
+      if(data.key_press === null) {
+          picked = 'empty';
+	  ignored = 'both';
+      } else {
+          // which card was chosen? from key press
+          idx_picked = avail_keys.indexOf(data.key_press);
+          // binary choice, make ignored opposite of picked
+          idx_ignored = idx_picked==0?1:0;
+          picked = twocards[idx_picked];
+          ignored = twocards[idx_ignored];
+      }
       
       // add score
       data.cost   = CARDS[picked].cost;

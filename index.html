@@ -150,7 +150,7 @@ function dummy(c){
          data.win   = CARDS[c].score()
 	 data.rt = $('#rt').val();
 	 data.rtpen = calc_rtpen(data.rt, data.win, data.cost);
-         data.score = data.win - data.cost - rtpen;
+         data.score = data.win - data.cost - data.rtpen;
          data.picked = c;
       }})}
 function fulltrial() {
