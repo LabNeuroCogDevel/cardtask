@@ -133,7 +133,7 @@ var instructions = {
     'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
     "You have to pay whether you win or lose.",
 	
-    "<div>Blue and green cards cost " + LOWCOST + 'point' +
+    "<div>Some cards cost " + LOWCOST + " point" +
         '<div class="threecards">'+
 	    // TODO: correct order!?
            CARDS['p11_1S'].html('left')+
@@ -142,7 +142,7 @@ var instructions = {
         '</div>' +
     "</div>",
 
-    "<div>Red cards cost " + HIGHCOST + ' points' +
+    "<div>This cards cost " + HIGHCOST + ' points' +
         '<div class="threecards">'+
 	    // TODO: correct order!?
            CARDS['empty'].html('left')+
@@ -173,7 +173,7 @@ var instructions = {
       '<img src="static/images/coin_sm.png">' +
     "</div></div>",
 
-    "<div>A red coin means you lost points!<br>" +
+    "<div>A lone X-ed coin means you lost a point!<br>" +
     pictureRep(0,1) + "</div>",
 
     "Your goal is to learn which cards give rewards most often<br>" +
