@@ -154,14 +154,14 @@ function dummy(c){
          data.picked = c;
       }})}
 function fulltrial() {
-   t = mktrial_fixloc("p11_1D", "p11_1R")
-   t2 = mktrial_fixloc("p11_1D", "p11_1F")
+   t = mktrial_fixloc("p11_1I", "p11_1H")
+   t2 = mktrial_fixloc("p11_1I", "p11_1S")
    jsPsych.init({timeline: [t, feedback, t2, feedback], display_element: jsp,
                  on_finish: function() {fulltrial()}
                 });
 }
 function fulltrial_old() {
-   t = mktrial("p11_1D", "p11_1R")
+   t = mktrial("p11_1I", "p11_1H")
    jsPsych.init({timeline: [t, feedback], display_element: jsp});
 }
 function instruction(){
@@ -192,7 +192,7 @@ function fbk_set(n){
 function init(){
     $("#feedbacktypes").append(Object.keys(fbk).map(id => `<a class=fbk id=${id} onclick="fbk_set('${id}')">${id}</a> `).join(" "))
    fbk_set('current');
-   mkfeedback('p11_1R');
+   mkfeedback('p11_1H');
 }
     </script>
 
@@ -210,8 +210,8 @@ function init(){
       <a href="#" onclick="fulltrial_old()"> ❖ vs ✢ (old)</a>
     <div id="feedbacktypes">fbk settings: </div>
     <div> feedback:
-      <a href="#" onclick="mkfeedback('p11_1R')" style="color:red">✢</a> , 
-      <a href="#" onclick="mkfeedback('p11_1D')" style="color:blue">❖</a> ,
+      <a href="#" onclick="mkfeedback('p11_1H')" style="color:red">✢</a> , 
+      <a href="#" onclick="mkfeedback('p11_1I')" style="color:blue">❖</a> ,
       <a href="#" onclick="mkfeedback('test_0B')">💣</a> 
       rt: <input id="rt" type="input" value="1000" size="5" />
     </div>

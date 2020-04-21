@@ -9,3 +9,5 @@
 /*.cost { background-color: #ff0000; color:white;}*/
 .cost { border: solid black 5px;}
 .wallet { padding-bottom: 20px; }
+
+.card.small { font-size: 40px;}

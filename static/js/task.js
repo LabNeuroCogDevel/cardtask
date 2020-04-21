@@ -23,11 +23,15 @@ const INITPOINTS=200;
 const BLOCKLEN = 40;
 const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.6, .4];  // low/high pair, any/red //20200421 inc 40% from 20%
-const SLOTORDER = ['✿', '✢',  '❖'];
-const DEBUG = 0; // change 1=>0
-const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 
-const ALLOWTOUCH = 1;
+// only the first 3 are used. Maybe shuffled later
+const SLOTOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
+const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
+const DEBUG = 1; // change 1=>0
+const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
+const RTPEN = 0; // 20200421 - disable RT penalty
+
+const ALLOWTOUCH = 1; //20200421 - enable touching symbol
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -51,36 +55,44 @@ const RIGHT_KEY = 39;
 const SPACE_KEY = 32; //progress feedback
 const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 
+// TODO: randomize
+SLOTORDER = [SLOTOPTS[1], SLOTOPTS[2], SLOTOPTS[0]];
+CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]];
+
 /* Card class defined in utils */
 
 // initialize cards. probability will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2F': new Card('✿', 'green', LOWCOST , CARDWIN, .2), //flower
-  'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8), //diamond
-  'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1), //cross
+   // 20200421 - setup for random symbols. change card names
+   //   S=Second was F=Flower 
+   //   I=Initial Best was D=diamond
+   //   H=HighCost was R=red(cross)
+  'p28_8I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .8),
+  'p28_2S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .2),
+  'p28_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
    // phase 2 80/20/100
-  'p82_8F': new Card('✿', 'green', LOWCOST , CARDWIN, .8),
-  'p82_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
-  'p82_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+  'p82_2I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .2),
+  'p82_8S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .8),
+  'p82_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
    // phase 3 100/100/100
-  'p11_1F': new Card('✿', 'green', LOWCOST , CARDWIN,  1),
-  'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
-  'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
+  'p11_1I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN,  1),
+  'p11_1S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN,  1),
+  'p11_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+   // 60 instead of 80 - 20200416
+   // phase 1 20/60/100
+  'p26_8I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .6),
+  'p26_2S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .2),
+  'p26_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+   // phase 2 60/20/100
+  'p62_2I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .2),
+  'p62_8S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .6),
+  'p62_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+   // 20200420 no card
+  'empty': new Card('', 'white' , 0, 0, 0),
    // for testing only
   'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
-   // 60 instead of 80 - 20200416
-   // phase 1 20/60/100
-  'p26_2F': new Card('✿', 'green', LOWCOST , CARDWIN, .2),
-  'p26_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .6),
-  'p26_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
-   // phase 2 60/20/100
-  'p62_8F': new Card('✿', 'green', LOWCOST , CARDWIN, .6),
-  'p62_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
-  'p62_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
-   // 20200420 no card
-  'empty': new Card('', 'white' , 0, 0, 0),
 };
 
 // initial trial - get name and age
@@ -121,16 +133,18 @@ var instructions = {
 	
     "<div>Blue and green cards cost " + LOWCOST + 'point' +
         '<div class="threecards">'+
-           CARDS['p11_1F'].html('left')+
+	    // TODO: correct order!?
+           CARDS['p11_1S'].html('left')+
            CARDS['empty'].html('center')+
-           CARDS['p11_1D'].html('right')+
+           CARDS['p11_1I'].html('right')+
         '</div>' +
     "</div>",
 
     "<div>Red cards cost " + HIGHCOST + ' points' +
         '<div class="threecards">'+
+	    // TODO: correct order!?
            CARDS['empty'].html('left')+
-           CARDS['p11_1R'].html('center')+
+           CARDS['p11_1H'].html('center')+
            CARDS['empty'].html('right')+
         '</div>'+
     "</div>",
@@ -283,6 +297,7 @@ function mktrial_fixloc(c1, c2) {
 	  console.log(c1, pos1, c2, pos2, avail_keys,
                       data.key_press, twocards);
       }
+      //console.log(data.key_press)
       // which card was chosen? from key press
       idx_picked = avail_keys.indexOf(data.key_press);
       // binary choice, make ignored opposite of picked
@@ -344,6 +359,8 @@ function mktrial(l, r) {
 })}
 
 function calc_rtpen(rt, win, cost) { 
+  if(!RTPEN){return(0);}
+
   if(win == 0) { 
     rtpen = 0
   } else {
@@ -435,44 +452,44 @@ var nhigh = BLOCKLEN*CARDFREQ[1]/4;
 
 // blocks of 20/80, 80/20, and 100/100
 p28 = [].concat(
-  mkrep('p28_2F','p28_8D', nlow ),
-  mkrep('p28_8D','p28_2F', nlow ),
-  mkrep('p28_1R','p28_2F', nhigh),
-  mkrep('p28_2F','p28_1R', nhigh),
-  mkrep('p28_1R','p28_8D', nhigh),
-  mkrep('p28_8D','p28_1R', nhigh))
+  mkrep('p28_2S','p28_8I', nlow ),
+  mkrep('p28_8I','p28_2S', nlow ),
+  mkrep('p28_1H','p28_2S', nhigh),
+  mkrep('p28_2S','p28_1H', nhigh),
+  mkrep('p28_1H','p28_8I', nhigh),
+  mkrep('p28_8I','p28_1H', nhigh))
 p82 = [].concat(
-  mkrep('p82_2D','p82_8F', nlow ),
-  mkrep('p82_8F','p82_2D', nlow ),
-  mkrep('p82_1R','p82_2D', nhigh),
-  mkrep('p82_2D','p82_1R', nhigh),
-  mkrep('p82_1R','p82_8F', nhigh),
-  mkrep('p82_8F','p82_1R', nhigh))
+  mkrep('p82_2I','p82_8S', nlow ),
+  mkrep('p82_8S','p82_2I', nlow ),
+  mkrep('p82_1H','p82_2I', nhigh),
+  mkrep('p82_2I','p82_1H', nhigh),
+  mkrep('p82_1H','p82_8S', nhigh),
+  mkrep('p82_8S','p82_1H', nhigh))
 // 20200410 - end block is 2x as long as others
 // maybe should be p11,p11 in trials
 p11 = [].concat(
-  mkrep('p11_1F','p11_1D', nlow *2),
-  mkrep('p11_1D','p11_1F', nlow *2),
-  mkrep('p11_1R','p11_1D', nhigh*2),
-  mkrep('p11_1D','p11_1R', nhigh*2),
-  mkrep('p11_1R','p11_1F', nhigh*2),
-  mkrep('p11_1F','p11_1R', nhigh*2))
+  mkrep('p11_1S','p11_1I', nlow *2),
+  mkrep('p11_1I','p11_1S', nlow *2),
+  mkrep('p11_1H','p11_1I', nhigh*2),
+  mkrep('p11_1I','p11_1H', nhigh*2),
+  mkrep('p11_1H','p11_1S', nhigh*2),
+  mkrep('p11_1S','p11_1H', nhigh*2))
 
 // 20200416 - 20/60 and 60/20 blocks
 p26 = [].concat(
-  mkrep('p26_2F','p26_8D', nlow ),
-  mkrep('p26_8D','p26_2F', nlow ),
-  mkrep('p26_1R','p26_2F', nhigh),
-  mkrep('p26_2F','p26_1R', nhigh),
-  mkrep('p26_1R','p26_8D', nhigh),
-  mkrep('p26_8D','p26_1R', nhigh))
+  mkrep('p26_2S','p26_8I', nlow ),
+  mkrep('p26_8I','p26_2S', nlow ),
+  mkrep('p26_1H','p26_2S', nhigh),
+  mkrep('p26_2S','p26_1H', nhigh),
+  mkrep('p26_1H','p26_8I', nhigh),
+  mkrep('p26_8I','p26_1H', nhigh))
 p62 = [].concat(
-  mkrep('p62_2D','p62_8F', nlow ),
-  mkrep('p62_8F','p62_2D', nlow ),
-  mkrep('p62_1R','p62_2D', nhigh),
-  mkrep('p62_2D','p62_1R', nhigh),
-  mkrep('p62_1R','p62_8F', nhigh),
-  mkrep('p62_8F','p62_1R', nhigh))
+  mkrep('p62_2I','p62_8S', nlow ),
+  mkrep('p62_8S','p62_2I', nlow ),
+  mkrep('p62_1H','p62_2I', nhigh),
+  mkrep('p62_2I','p62_1H', nhigh),
+  mkrep('p62_1H','p62_8S', nhigh),
+  mkrep('p62_8S','p62_1H', nhigh))
 
 // combine all
 trials=[p26, p62, p26, p62, p11].

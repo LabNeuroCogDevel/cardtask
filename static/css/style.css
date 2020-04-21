@@ -29,11 +29,16 @@ body {
    font-size: 80px;
    color: white;
 }
+
+/* card backgrounds */
 .blue { background-color: #4371C3; }
 .green { background-color: #23A123; }
 .red { background-color: red; }
 .white { background-color: white; }
+.yellow {background-color: #FFFF00;}
+.orange {background-color: orange;}
 
+/* card positions */
 .left { align: left;}
 .right { align: right;}
 .center { align: center;}
