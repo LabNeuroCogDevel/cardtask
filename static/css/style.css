@@ -26,12 +26,14 @@ body {
    border: 2px solid black;
    border-radius: 20px;
    align-items: center;
-   font-size: 30px;
+   font-size: 80px;
    color: white;
 }
 .blue { background-color: #4371C3; }
+.green { background-color: #23A123; }
 .red { background-color: red; }
 .white { background-color: white; }
+
 .left { align: left;}
 .right { align: right;}
 .center { align: center;}

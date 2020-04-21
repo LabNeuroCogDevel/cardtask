@@ -49,15 +49,15 @@ const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 // initialize cards. probability will change
 const CARDS = {
    // phase 1 20/80/100
-  'p28_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2), //flower
+  'p28_2F': new Card('✿', 'green', LOWCOST , CARDWIN, .2), //flower
   'p28_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .8), //diamond
   'p28_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1), //cross
    // phase 2 80/20/100
-  'p82_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .8),
+  'p82_8F': new Card('✿', 'green', LOWCOST , CARDWIN, .8),
   'p82_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
   'p82_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // phase 3 100/100/100
-  'p11_1F': new Card('✿', 'blue', LOWCOST , CARDWIN,  1),
+  'p11_1F': new Card('✿', 'green', LOWCOST , CARDWIN,  1),
   'p11_1D': new Card('❖', 'blue', LOWCOST , CARDWIN,  1),
   'p11_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // for testing only
@@ -65,11 +65,11 @@ const CARDS = {
   'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
    // 60 instead of 80 - 20200416
    // phase 1 20/60/100
-  'p26_2F': new Card('✿', 'blue', LOWCOST , CARDWIN, .2),
+  'p26_2F': new Card('✿', 'green', LOWCOST , CARDWIN, .2),
   'p26_8D': new Card('❖', 'blue', LOWCOST , CARDWIN, .6),
   'p26_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // phase 2 60/20/100
-  'p62_8F': new Card('✿', 'blue', LOWCOST , CARDWIN, .6),
+  'p62_8F': new Card('✿', 'green', LOWCOST , CARDWIN, .6),
   'p62_2D': new Card('❖', 'blue', LOWCOST , CARDWIN, .2),
   'p62_1R': new Card('✢', 'red' , HIGHCOST, CARDWIN,  1),
    // 20200420 no card
@@ -112,7 +112,7 @@ var instructions = {
     'Each card has a cost to buy it, either ' + LOWCOST + ' or ' + HIGHCOST + ' points.<br>' +
     "You have to pay whether you win or lose.",
 	
-    "<div>Blue cards cost " + LOWCOST + 
+    "<div>Blue and green cards cost " + LOWCOST + 
         '<div class="threecards">'+
            CARDS['p11_1F'].html('left')+
            CARDS['empty'].html('center')+
