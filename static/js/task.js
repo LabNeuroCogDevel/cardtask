@@ -5,11 +5,12 @@
  *  see also:
  *    utils.js           - "Card" class definition
  *    templates/exp.html - `timeline` usage. jsPsych+psiTurk
+ *    index.html         - debugging and example page
  *    t/cards.js         - minimal tests
  *
  */
 // starting value should be > 100, the most expensive card
-const TASKVER = '20200420.2-fixslots';
+const TASKVER = '20200421.1-touch';
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
@@ -18,6 +19,8 @@ const CARDFREQ = [.8, .2];  // low/high pair, any/red
 const SLOTORDER = ['✿', '✢',  '❖'];
 const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
+
+const ALLOWTOUCH = 1;
 
 const CARDWIN = 50;
 const LOWCOST = 1;
@@ -159,8 +162,8 @@ var instructions = {
     "Sometimes the chances of a card giving you a reward will change.",
 
     '<div>Ready? <br>The game starts after this page<br><br>' +
-    '<br>Remember, hit<br>'+
-    'the <b>left, down (center), or right arrow key</b> to pick a card<br>' +
+    '<br>Remember, hit <br>'+
+    '<b>the arrow keys (←, ↓, or →)</b> to pick a card<br>' +
     'and <b>spacebar</b> to continue' +
     '</div>',
    
@@ -245,9 +248,9 @@ function mktrial_fixloc(c1, c2) {
     disp[pos1] = c1c;
     disp[pos2] = c2c;
     let stim = '<div class="threecards">'+
-           disp[0].html('left')+
-           disp[1].html('center')+
-           disp[2].html('right')+
+           disp[0].html('left', SLOTKEYS[0])+
+           disp[1].html('center', SLOTKEYS[1])+
+           disp[2].html('right', SLOTKEYS[2])+
            '</div>'
 
 
@@ -346,6 +349,7 @@ function calc_rtpen(rt, win, cost) {
 // use function to make b/c we might want to 
 // change proprties of one but not all (index.html in github pages)
 function mkfbk() { 
+   let onclick=!ALLOWTOUCH?"":("onclick='simkey("+SPACE_KEY+")'");
    return({
     type: 'html-keyboard-response',
     // 20200413 - updated to use coins and animation
@@ -362,7 +366,7 @@ function mkfbk() {
        slowmsg = ""
       }
       return(
-          "<p class='feedback sym'>" + card.sym +"</p><div class='wallet'>" +
+          "<p class='feedback sym' " + onclick + ">" + card.sym +"</p><div class='wallet'>" +
             pictureRep(prev.win-prev.rtpen, prev.cost) +
             "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
             "<p class='feedback " + color + "'>Won: " + msg + "</p>" +

@@ -1,17 +1,23 @@
-// cars contain some values
+// Card: how to score and display cards
+//       also hold onto card poperties 
+//          probability, payout, color, symbol
+// GLOBALS: ALLOWTOUCH and DEBUG
 class Card {
    constructor(sym,  color, cost, pays, p){
       this.sym = sym; this.color=color; this.cost=cost;
       this.pays=pays; this.p=p;
    }
-   html(side) {
+   html(side, charcode) {
      // nonbreaking space to preserve alignment
      let sym = this.sym==""?"&nbsp;":this.sym;
      let cost= this.cost!=0?("-"+this.cost):"&nbsp;";
+     let onclick = (charcode === undefined || !ALLOWTOUCH)?
+         "":
+         (" onclick='simkey("+charcode+")'")
 
      return('<div class="card-container" id="card-' + this.sym +'">' +
 	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
-            '<div class="card '+ this.color +' '+ side + '">' + sym + '</div>' +
+            '<div class="card '+ this.color +'" '+ side + onclick + '>' + sym + '</div>' +
 	    // if cost is zero, dont display anything
             '<p> '+ cost + '</p>' + 
             '</div>');
@@ -30,6 +36,22 @@ class Card {
       $('#card-' +this.sym).fadeTo(100, .1)
   }
 };
+
+function simkey(key) {
+  // for charcode see e.g. "a".charCodeAt(0) 
+   
+  // doesnt work
+  // jQuery.event.trigger({ type : 'keypress', which: key});
+  
+  // from jsPsych/tests/testing-utils.js:
+  let dispel = document.querySelector('.jspsych-display-element');
+  dispel.dispatchEvent(new KeyboardEvent('keydown', {keyCode: key}));
+  dispel.dispatchEvent(new KeyboardEvent('keyup',   {keyCode: key}));
+  // record that it was simulated push instead of key 
+  jsPsych.data.get().addToLast({touched: true});
+  console.log('sent', key, 'updated', jsPsych.data.get().last().values());
+}
+
 
 
 function AssertException(message) { this.message = message; }
