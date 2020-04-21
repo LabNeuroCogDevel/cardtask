@@ -10,4 +10,5 @@
 .cost { border: solid black 5px;}
 .wallet { padding-bottom: 20px; }
 
-.card.small { font-size: 40px;}
+.card.small { font-size: 40px; min-height: 100px; }
+   

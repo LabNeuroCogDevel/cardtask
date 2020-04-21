@@ -214,7 +214,7 @@ function countWin(net) {
       //  colors                     == 0 20 40 49
       // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
       const c_points =  Math.floor(cval)
-      obj.html("Net: " + c_points);
+      obj.html("+" + c_points);
       obj.css("background-color", "rgb(0," + g_color + ",0)");
       if (progress < 1) {
          window.requestAnimationFrame(step);
@@ -260,6 +260,8 @@ function rt_progress(){
    };
    window.requestAnimationFrame(step);
 }
+
+
 function mktrial_fixloc(c1, c2) {
     c1c=CARDS[c1];
     c2c=CARDS[c2];
@@ -356,6 +358,7 @@ function mktrial(l, r) {
       data.l = l;
       data.r = r;
       data.cost  = CARDS[picked].cost;
+      data.color = CARDS[picked].color;
       data.p     = CARDS[picked].p;
       data.win   = CARDS[picked].score();
       data.rtpen = calc_rtpen(data.rt, data.win, data.cost)
@@ -391,23 +394,24 @@ function mkfbk() {
       // setup win vs nowin feedback color and message
       let prev=jsPsych.data.get().last(1).values()[0];
       let msg=(prev.win > 0)?("+"+prev.win):"0";
-      let color=(prev.win > 0)?"win":"nowin";
+      let wincolor=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
 
-      if(prev.win>0) {
+      // 20200421 - when no rtpen not in feedback, no need for this
+      /*if(prev.win>0) {
        slowmsg = "<p class='feedback nowin'>Slow: -" + prev.rtpen + "</p>"
       } else {
        slowmsg = ""
-      }
+      }*/
       return(
-          "<p class='feedback sym' " + onclick + ">" + card.sym +"</p><div class='wallet'>" +
+          "<div class='card small " + card.color + "' " +
+	      onclick + ">" + card.sym + "</div>" +
+          "<div class='wallet'>" +
             pictureRep(prev.win-prev.rtpen, prev.cost) +
-            "</div><p class='feedback cost'> Paid: -" + prev.cost +"</p>" +
-            "<p class='feedback " + color + "'>Won: " + msg + "</p>" +
-            slowmsg +
-            "<p class='feedback net "+color+"'>Net: " + prev.score + "</p>"+
-            "<p class='feedback'>Total: " + totalPoints() + "</p>" +
-            "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+          "</div>"+
+          "<p class='feedback net "+ wincolor +"'>" + prev.score + "</p>"+
+          "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
    }, on_load: function(trial) {
        let prev=jsPsych.data.get().last(1).values()[0]
