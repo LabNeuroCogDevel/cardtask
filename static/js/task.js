@@ -30,8 +30,6 @@ const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
 const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 
-const RTPEN = 0; // 20200421 - disable RT penalty
-const RTMAX = 2000; //ms. how long to wait before auto-progressing. 0 = off
 
 const ALLOWTOUCH = 1; //20200421 - enable touching symbol
 
@@ -39,6 +37,8 @@ const CARDWIN = 50;
 const LOWCOST = 1;
 const HIGHCOST = 10;
 
+const RTMAX = 2000; //ms. how long to wait before auto-progressing. 0 = off
+const RTPEN = 0; // 20200421 - disable RT penalty
 // animation
 const MAXCNTDUR=250 //ms
 const MAXRT=2000 // ms - time to zero points from slow RT
@@ -339,19 +339,21 @@ function mktrial_fixloc(c1, c2) {
 	  data.side_idx = SLOTORDER.indexOf(CARDS[picked].sym)
       }
       
-      // add score
+      // score
+      data.win    = CARDS[picked].score();
+      data.rtpen  = calc_rtpen(data.rt, data.win, data.cost);
+      data.score  = data.win - data.cost - data.rtpen;
+
+      /* data we want to have for later */
+      data.picked = picked;
+      data.ignored = ignored;
+      // track card info for convince 
       data.cost   = CARDS[picked].cost;
       data.p      = CARDS[picked].p;
-      data.win    = CARDS[picked].score();
-      data.rtpen  = calc_rtpen(data.rt, data.win, data.cost)
-      data.score  = data.win - data.cost - data.rtpen;
       data.sym    = CARDS[picked].sym;
-      data.picked = picked;
+      data.color  = CARDS[picked].color;
       if(DEBUG) {console.log(picked, data.sym)}
     },
-   // keep the cards passed in the data?
-   c1: c1,
-   c2: c2
 })}
 
 
