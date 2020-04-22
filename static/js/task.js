@@ -29,6 +29,7 @@ const SYMOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
 const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
 const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
+const USERANDOM =0; // 20200422 - random but not toggled yet
 
 
 const ALLOWTOUCH = 1; //20200421 - enable touching symbol
@@ -63,11 +64,16 @@ const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
  * SLOTORDER - which symbol is in each slot (left, center, right)
  */
 
-// TODO: randomize
-SLOTORDER = [SYMOPTS[1] , SYMOPTS[2] , SYMOPTS[0] ]; // symbol <-> pos
-// SLOTVAL just reordered SLOTORDER
-SLOTVAL   = [SYMOPTS[0] , SYMOPTS[1] , SYMOPTS[2] ]; // symbol <-> val
-CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]]; // symbol <-> color
+ // original 3 fixed positions
+if(USERANDOM) {
+  SLOTORDER = jsPsych.randomization.shuffle(SYMOPTS).slice(0, 3)
+  SLOTVAL   = jsPsych.randomization.shuffle(SLOTORDER)
+  CARDCOLOR = jsPsych.randomization.shuffle(COLOROPTS).slice(0, 3)
+} else{
+  SLOTORDER = [SYMOPTS[1] , SYMOPTS[2] , SYMOPTS[0] ]; // symbol <-> pos
+  SLOTVAL   = [SYMOPTS[0] , SYMOPTS[1] , SYMOPTS[2] ]; // symbol <-> val
+  CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]]; // symbol <-> color
+}
 
 class Sym {
     constructor(sym, color, val) { this.sym=sym; this.val=val; this.color=color;}
@@ -341,6 +347,7 @@ function mktrial_fixloc(c1, c2) {
       
       // score
       data.win    = CARDS[picked].score();
+      data.cost   = CARDS[picked].cost;
       data.rtpen  = calc_rtpen(data.rt, data.win, data.cost);
       data.score  = data.win - data.cost - data.rtpen;
 
@@ -348,7 +355,6 @@ function mktrial_fixloc(c1, c2) {
       data.picked = picked;
       data.ignored = ignored;
       // track card info for convince 
-      data.cost   = CARDS[picked].cost;
       data.p      = CARDS[picked].p;
       data.sym    = CARDS[picked].sym;
       data.color  = CARDS[picked].color;
