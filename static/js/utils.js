@@ -7,19 +7,22 @@ class Card {
       this.sym = sym; this.color=color; this.cost=cost;
       this.pays=pays; this.p=p;
    }
-   html(side, charcode) {
+   html(side, charcode, small) {
      // nonbreaking space to preserve alignment
      let sym = this.sym==""?"&nbsp;":this.sym;
      let cost= this.cost!=0?("-"+this.cost):"&nbsp;";
-     let onclick = (charcode === undefined || !ALLOWTOUCH)?
+     let onclick = (charcode === undefined || charcode === null || !ALLOWTOUCH)?
          "":
          (" onclick='simkey("+charcode+")'")
 
+     let smallclass = (small === undefined)?"":"small";
+     let classes =  ['card', this.color, side, smallclass].join(" ");
      return('<div class="card-container" id="card-' + this.sym +'">' +
 	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
-            '<div class="card '+ this.color +'" '+ side + onclick + '>' + sym + '</div>' +
+            '<div class="'+ classes  + '" '+
+	      onclick + '>' + sym + '</div>' +
 	    // if cost is zero, dont display anything
-            '<p> '+ cost + '</p>' + 
+            '<p> '+ (this.sym!=""?cost:"&nbsp;") + '</p>' + 
             '</div>');
   }
   score(){

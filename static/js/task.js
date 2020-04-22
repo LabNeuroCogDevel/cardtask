@@ -25,9 +25,9 @@ const BLOCKJITTER = 2;      // Not implemented
 const CARDFREQ = [.6, .4];  // low/high pair, any/red //20200421 inc 40% from 20%
 
 // only the first 3 are used. Maybe shuffled later
-const SLOTOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
+const SYMOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
 const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
-const DEBUG = 1; // change 1=>0
+const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 
 const RTPEN = 0; // 20200421 - disable RT penalty
@@ -57,40 +57,64 @@ const RIGHT_KEY = 39;
 const SPACE_KEY = 32; //progress feedback
 const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 
-// TODO: randomize
-SLOTORDER = [SLOTOPTS[1], SLOTOPTS[2], SLOTOPTS[0]];
-CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]];
 
-/* Card class defined in utils */
+/* SYMOPTS   - list of symbols task could use
+ * SLOTVAL   - symbol values as indexes. 1st & 2nd are low, last is high
+ * SLOTORDER - which symbol is in each slot (left, center, right)
+ */
+
+// TODO: randomize
+SLOTORDER = [SYMOPTS[1] , SYMOPTS[2] , SYMOPTS[0] ]; // symbol <-> pos
+// SLOTVAL just reordered SLOTORDER
+SLOTVAL   = [SYMOPTS[0] , SYMOPTS[1] , SYMOPTS[2] ]; // symbol <-> val
+CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]]; // symbol <-> color
+
+class Sym {
+    constructor(sym, color, val) { this.sym=sym; this.val=val; this.color=color;}
+}
+
+SYMS = {
+ 'I': new Sym(SLOTVAL[0], COLOROPTS[0], LOWCOST),
+ 'S': new Sym(SLOTVAL[1], COLOROPTS[1], LOWCOST),
+ 'H': new Sym(SLOTVAL[2], COLOROPTS[2], HIGHCOST),
+}
+// rev lookup -- TODO: create instead of hardcode
+SIDESYM = ['I','S','H']
+
+function symcard(key, p){
+    let s = SYMS[key];
+    return(new Card(s.sym, s.color, s.val, CARDWIN, p))
+}
+
 
 // initialize cards. probability will change
 const CARDS = {
    // phase 1 20/80/100
    // 20200421 - setup for random symbols. change card names
-   //   S=Second was F=Flower 
    //   I=Initial Best was D=diamond
+   //   S=Second was F=Flower 
    //   H=HighCost was R=red(cross)
-  'p28_8I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .8),
-  'p28_2S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .2),
-  'p28_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+  'p28_8I': symcard('I', .8),
+  'p28_2S': symcard('S', .2),
+  'p28_1H': symcard('H',  1),
    // phase 2 80/20/100
-  'p82_2I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .2),
-  'p82_8S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .8),
-  'p82_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+  'p82_2I': symcard('I', .2),
+  'p82_8S': symcard('S', .8),
+  'p82_1H': symcard('H',  1), // same as before, phase name change
    // phase 3 100/100/100
-  'p11_1I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN,  1),
-  'p11_1S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN,  1),
-  'p11_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+  'p11_1I': symcard('I',  1),
+  'p11_1S': symcard('S',  1),
+  'p11_1H': symcard('H',  1),
    // 60 instead of 80 - 20200416
    // phase 1 20/60/100
-  'p26_8I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .6),
-  'p26_2S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .2),
-  'p26_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
+  'p26_8I': symcard('I', .6),
+  'p26_2S': symcard('S', .2),
+  'p26_1H': symcard('H',  1),
    // phase 2 60/20/100
-  'p62_2I': new Card(SLOTORDER[1], CARDCOLOR[1], LOWCOST , CARDWIN, .2),
-  'p62_8S': new Card(SLOTORDER[0], CARDCOLOR[0], LOWCOST , CARDWIN, .6),
-  'p62_1H': new Card(SLOTORDER[2], CARDCOLOR[2], HIGHCOST, CARDWIN,  1),
-   // 20200420 no card. used for empty display AND empty feedback
+  'p62_2I': symcard('I', .2),
+  'p62_8S': symcard('S', .6),
+  'p62_1H': symcard('H',  1),
+   // 20200420 no card: used for empty display AND empty feedback
   'empty': new Card('', 'white' , LOWCOST, 0, 0),
    // for testing only
   'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
@@ -134,21 +158,14 @@ var instructions = {
     "You have to pay whether you win or lose.",
 	
     "<div>Some cards cost " + LOWCOST + " point" +
-        '<div class="threecards">'+
-	    // TODO: correct order!?
-           CARDS['p11_1S'].html('left')+
-           CARDS['empty'].html('center')+
-           CARDS['p11_1I'].html('right')+
-        '</div>' +
+	// TODO: correct order!?
+	threecardhtml([CARDS['p11_1S'], CARDS['empty'], CARDS['p11_1I']],
+                      [null, null, null])+
     "</div>",
 
     "<div>This cards cost " + HIGHCOST + ' points' +
-        '<div class="threecards">'+
-	    // TODO: correct order!?
-           CARDS['empty'].html('left')+
-           CARDS['p11_1H'].html('center')+
-           CARDS['empty'].html('right')+
-        '</div>'+
+	threecardhtml([CARDS['empty'], CARDS['p11_1H'], CARDS['empty']],
+                      [null, null, null])+
     "</div>",
 
     // NB. maybe don't put total wins (20200421BL)
@@ -261,6 +278,14 @@ function rt_progress(){
    window.requestAnimationFrame(step);
 }
 
+function threecardhtml(carray, keyarray, small) {
+    return('<div class="threecards">'+
+           carray[0].html('left'  , keyarray[0], small)+
+           carray[1].html('center', keyarray[1], small)+
+           carray[2].html('right' , keyarray[2], small)+
+           '</div>')
+}
+
 function mktrial_fixloc(c1, c2) {
     c1c=CARDS[c1];
     c2c=CARDS[c2];
@@ -272,12 +297,7 @@ function mktrial_fixloc(c1, c2) {
     disp = [CARDS['empty'], CARDS['empty'], CARDS['empty']];
     disp[pos1] = c1c;
     disp[pos2] = c2c;
-    let stim = '<div class="threecards">'+
-           disp[0].html('left', SLOTKEYS[0])+
-           disp[1].html('center', SLOTKEYS[1])+
-           disp[2].html('right', SLOTKEYS[2])+
-           '</div>'
-
+    let stim = threecardhtml(disp, SLOTKEYS);
     let trialdur = RTMAX===0?null:RTMAX;
 
   return({
@@ -389,7 +409,7 @@ function calc_rtpen(rt, win, cost) {
 // use function to make b/c we might want to 
 // change proprties of one but not all (index.html in github pages)
 function mkfbk() { 
-   let onclick=!ALLOWTOUCH?"":("onclick='simkey("+SPACE_KEY+")'");
+   let onclick=ALLOWTOUCH?SPACE_KEY:null;
    return({
     type: 'html-keyboard-response',
     // 20200413 - updated to use coins and animation
@@ -401,19 +421,14 @@ function mkfbk() {
       let card = CARDS[prev.picked];
       
       // make small cards all white. replace one of empties with picked
-	console.log(prev.side_idx)
       if(prev.side_idx===null) {
-	  disp = ["Respond faster to win points!"];
+	  disp = "Respond faster to win points!";
 	  console.log('is null', prev.side_idx)
       } else {
-          disp = [
-         	"<div class='card-container'> <div class='small card white left'   " + onclick + ">&nbsp;</div></div>",
-         	"<div class='card-container'> <div class='small card white center' " + onclick + ">&nbsp;</div></div>",
-         	"<div class='card-container'> <div class='small card white right'  " + onclick + ">&nbsp;</div></div>"];
+          cdisp = [CARDS['empty'], CARDS['empty'], CARDS['empty']] 
           side = ['left','center','right'][prev.side_idx];
-          disp[prev.side_idx] = "<div class='card-container'><div class='small card " +
-                                 card.color + " " + side + "' " + onclick +
-        	                ">"+prev.sym+"</div></div>";
+          cdisp[prev.side_idx] = card;
+	  disp = threecardhtml(cdisp, [onclick, onclick, onclick], 1);
       }
 
       // 20200421 - when no rtpen not in feedback, no need for this
@@ -423,7 +438,7 @@ function mkfbk() {
        slowmsg = ""
       }*/
       return(
-          "<div class='twocards' >" + disp.join("") + "</div>" +
+          disp +
           "<div class='wallet'>" +
             pictureRep(prev.win-prev.rtpen, prev.cost) +
           "</div>"+
