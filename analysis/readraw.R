@@ -22,7 +22,8 @@ d <- read.table(file("stdin"), header=T, sep="\t", stringsAsFactors=F)
 #    without having to manually add them
 unjsoned <-
    lapply(d$subjInfo, function(x) 
-   gsub("([^{}:,]+)", '"\\1"', x) %>%
+   gsub("([^{}:,]+)", '"\\1"', x) %>% # add quotes to json
+   gsub(x=., '":,"', '":"","') %>%        # no value? make empty string default
    jsonlite::parse_json() %>% 
    as.data.frame %>% mutate(subjInfo=x)
  ) %>%
@@ -32,20 +33,22 @@ unjsoned <-
 
 
 # 20200410FC  (WF tidyverse-ize)
-# name and age parsed out from subjInfo by parse_json
-clean <- unjsoned %>%
+#  and age parsed out from subjInfo by parse_json
+# 20200424WF
+#  update for ISH, still allow DFR
+data <- unjsoned %>%
     # turn p28_8D into p28, .8, D
     # N.B. block created twice, second overrides. both should be identical
-    extract(leftInfo ,c("block","leftP", "leftCard"), "(p[128]+)_([128])([DFR])") %>%
-    extract(rightInfo ,c("block","rightP", "rightCard"), "(p[128]+)_([128])([DFR])") %>%
+    extract(picked ,c("block","choiceP", "choiceCard"), "(p[128]+)_([128])([A-Z])") %>%
+    extract(ignored ,c("block","ignP", "ignCard"), "(p[128]+)_([128])([A-Z])") %>%
     mutate(ses_id = paste(subjID, age, name, sep="_"),
            abstrial = trial,
-           leftP = label2prob(leftP),
-           rightP = label2prob(rightP),
-           choiceCard = ifelse(key==37, leftCard, rightCard),
-           # red is 2, blue (D or F) is 1
-           choiceType = ifelse(leftCard=='R'|rightCard=='R', 2, 1),
-           choseRed = as.numeric(choiceCard=='R')
+           choiceP = label2prob(choiceP),
+           ignP = label2prob(ignP),
+           # high, old red (H or R) is 2, others ( I, S; or old blue D,F) is 1
+           choiceType = ifelse(grepl('[HR]',paste0(choiceCard,choiceCard)), 2, 1),
+           choseHigh = as.numeric(grepl('[HR]',choiceCard)),
+           choseFirst= as.numeric(grepl('[ID]',choiceCard))
            ) %>%
     filter(block != "") %>% # remove feedback trials
     # count trials per subject. should match abstrial/2 
@@ -55,18 +58,7 @@ clean <- unjsoned %>%
            blocknum = (block!=lag(block)) %>% ifelse(is.na(.),1,.) %>% cumsum) %>%
     ungroup
            
-
-# what was the first good card (always D)
-# one row per subject with first good column
-firstGood <-
-    clean %>% group_by(ses_id) %>%
-    filter(choiceType==1) %>% filter(trial==min(trial)) %>%
-    mutate(firstGood=ifelse(leftP > rightP, leftCard, rightCard)) %>%
-    select(ses_id, firstGood)
-
-# goin back to by-trial dataframe
-data <- inner_join(clean, firstGood) %>%
-    mutate(choseFirst= as.numeric(choiceCard == firstGood))
-
-
 write.table(data, sep="\t", file="", row.names=F, quote=F)
+
+# show
+# data %>% split(.$name)%>% purrr::map(tail,n=2) %>% bind_rows %>% select(name,taskver,block,choiceCard,choiceP,choiceType) %>% print(n=1000)

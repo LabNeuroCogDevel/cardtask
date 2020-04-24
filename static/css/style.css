@@ -35,8 +35,8 @@ body {
 .green { background-color: #23A123; }
 .red { background-color: red; }
 .white { background-color: white; }
-.yellow {background-color: #FFFF00;}
-.orange {background-color: orange;}
+.yellow {background-color: #908800;}
+.orange {background-color: #946050;}
 
 /* card positions */
 .left { align: left;}

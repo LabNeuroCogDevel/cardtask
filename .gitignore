@@ -7,3 +7,10 @@ __pycache__
 static/js/jspsych/examples/
 *csv
 node_modules
+.nyc_output
+analysis/txt/datastring.json
+analysis/txt/res-raw.tsv
+analysis/txt/test.json
+attic/
+config_local.txt
+settings.md

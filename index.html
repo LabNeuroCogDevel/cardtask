@@ -195,7 +195,8 @@ function fbk_set(n){
 function init(){
     $("#feedbacktypes").append(Object.keys(fbk).map(id => `<a class=fbk id=${id} onclick="fbk_set('${id}')">${id}</a> `).join(" "))
    fbk_set('current');
-   mkfeedback('p11_1H');
+   //mkfeedback('p11_1H');
+   fulltrial();
 }
     </script>
 
@@ -207,14 +208,15 @@ function init(){
       <a href="https://lncdturk.herokuapp.com/"> heroku</a>
     </div>
     <div> trials:
-      <a href="#" onclick="fulltrial()"> ❖ vs ✢ & ✿</a> |
+      <a href="#" onclick="fulltrial()"> 2 trials & fbk </a> |
       <a href="#" onclick="instruction()">instr</a> |
       <a href="#" onclick="survey()">survey</a>  |
       <a href="#" onclick="fulltrial_old()"> ❖ vs ✢ (old)</a>
     <div id="feedbacktypes">fbk settings: </div>
     <div> feedback:
-      <a href="#" onclick="mkfeedback('p11_1H')" style="color:red">✢</a> , 
-      <a href="#" onclick="mkfeedback('p11_1I')" style="color:blue">❖</a> ,
+      <a href="#" onclick="mkfeedback('p11_1I')">I</a> ,
+      <a href="#" onclick="mkfeedback('p11_1S')">S</a> ,
+      <a href="#" onclick="mkfeedback('p11_1H')">H</a> , 
       <a href="#" onclick="mkfeedback('test_0B')">💣</a> 
       rt: <input id="rt" type="input" value="1000" size="5" />
     </div>
