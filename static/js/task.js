@@ -8,13 +8,6 @@
  *    index.html         - debugging and example page
  *    t/cards.js         - minimal tests
  *
- * 20200421 - Notes
- *   red coin -> x through coin
- *   x coin -> instead of poof
- *   you have 2 seconds to respond you wont win any points
- *   add each feedback to instructions
- *   feedback has card
- *    coins + winnings
  */
 // starting value should be > 100, the most expensive card
 const TASKVER = '20200421.2-feedback';
@@ -27,7 +20,7 @@ const CARDFREQ = [.6, .4];  // low/high pair, any/red //20200421 inc 40% from 20
 // only the first 3 are used. Maybe shuffled later
 const SYMOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
 const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
-const DEBUG = 0; // change 1=>0
+const DEBUG = 1; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 const USERANDOM =0; // 20200422 - random but not toggled yet
 
@@ -58,38 +51,70 @@ const RIGHT_KEY = 39;
 const SPACE_KEY = 32; //progress feedback
 const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 
-
-/* SYMOPTS   - list of symbols task could use
- * SLOTVAL   - symbol values as indexes. 1st & 2nd are low, last is high
- * SLOTORDER - which symbol is in each slot (left, center, right)
- */
-
- // original 3 fixed positions
-if(USERANDOM) {
-  SLOTORDER = jsPsych.randomization.shuffle(SYMOPTS).slice(0, 3)
-  SLOTVAL   = jsPsych.randomization.shuffle(SLOTORDER)
-  CARDCOLOR = jsPsych.randomization.shuffle(COLOROPTS).slice(0, 3)
-} else{
-  SLOTORDER = [SYMOPTS[1] , SYMOPTS[2] , SYMOPTS[0] ]; // symbol <-> pos
-  SLOTVAL   = [SYMOPTS[0] , SYMOPTS[1] , SYMOPTS[2] ]; // symbol <-> val
-  CARDCOLOR = [COLOROPTS[0], COLOROPTS[2], COLOROPTS[1]]; // symbol <-> color
-}
-
 class Sym {
-    constructor(sym, color, val) { this.sym=sym; this.val=val; this.color=color;}
+    constructor(sym, color, val, order) {
+	this.sym=sym;
+	this.val=val;
+	this.color=color;
+	this.side = order.indexOf(this.sym);
+    }
+}
+class ThreePositions {
+    // fix positions
+    constructor(allsyms, allcolors, cost) {
+	this.colors    = jsPsych.randomization.shuffle(allcolors).slice(0, 3);
+	this.slotorder = jsPsych.randomization.shuffle(allsyms).slice(0, 3);
+	this.slotval   = jsPsych.randomization.shuffle(this.slotorder);
+
+	this.keys = ['I','S','H'];
+	this.I = new Sym(this.slotval[0], this.colors[0], cost[0], this.slotorder);
+	this.S = new Sym(this.slotval[1], this.colors[1], cost[1], this.slotorder);
+	this.H = new Sym(this.slotval[2], this.colors[2], cost[2], this.slotorder);
+	// keys reordered by position
+	// e.g. H, S, I
+	this.poskey = this.keys.map(k=>this.slotorder.indexOf(this[k].sym)).map(i=>this.keys[i])
+    }
+    // lookups
+    pos_of_sym(sym){ return(this.slotorder.indexOf(sym));}
+    sym_at_pos(i)  { return(this.slotorder[i]);}
+    pos_at_type(t) { return(this.poskey.indexOf(t));}
+    type_at_pos(i) { return(this.poskey[i]);}
+    type_at_sym(i) { return(this[this.poskey[i]]);}
+    key_at_side(i) { return(SLOTKEYS[i]); }
+    type_at_keycode(k) { return(this.poskey[SLOTKEYS.indexOf(k)]);}
+    keys_for_cards(cards){
+	// keyinit omitted=use SLOTKEYS. might want to send spacebar. or nothing ([null,null,null])
+	var keyarray = [null, null, null];
+	var cardkey = [];
+	for(var c of cards){
+	    let i = this.pos_at_type(c.type)
+	    keyarray[i] = SLOTKEYS[i];
+	    cardkey.push(SLOTKEYS[i]);
+        }
+	return({'keys': keyarray, 'cards': cardkey})
+    }
+    html(showcards, keyinit, small) {
+	// showcards is an array of cards to show
+	// card should have 'type' property
+	var carray = [CARDS['empty'], CARDS['empty'], CARDS['empty']];
+	for(var c of showcards){
+	    let i = this.pos_at_type(c.type)
+	    carray[i] = c;
+        }
+	var keyarray = keyinit===undefined?this.keys_for_cards(showcards)['keys']:keyinit
+	return('<div class="threecards">'+
+	    carray[0].html('left'  , keyarray[0], small)+
+	    carray[1].html('center', keyarray[1], small)+
+	    carray[2].html('right' , keyarray[2], small)+
+	    '</div>')
+    }
 }
 
-SYMS = {
- 'I': new Sym(SLOTVAL[0], COLOROPTS[0], LOWCOST),
- 'S': new Sym(SLOTVAL[1], COLOROPTS[1], LOWCOST),
- 'H': new Sym(SLOTVAL[2], COLOROPTS[2], HIGHCOST),
-}
-// rev lookup -- TODO: create instead of hardcode
-SIDESYM = ['I','S','H']
+const LAYOUT = new ThreePositions(SYMOPTS, COLOROPTS, [LOWCOST, LOWCOST, HIGHCOST]);
 
-function symcard(key, p){
-    let s = SYMS[key];
-    return(new Card(s.sym, s.color, s.val, CARDWIN, p))
+function symcard(type, p){
+    let s = LAYOUT[type];
+    return(new Card(s.sym, s.color, s.val, CARDWIN, p, type))
 }
 
 
@@ -121,10 +146,10 @@ const CARDS = {
   'p62_8S': symcard('S', .6),
   'p62_1H': symcard('H',  1),
    // 20200420 no card: used for empty display AND empty feedback
-  'empty': new Card('', 'white' , LOWCOST, 0, 0),
+  'empty': new Card('', 'white' , LOWCOST, 0, 0, 'E'),
    // for testing only
-  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0), //bomb
-  'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0),
+  'test_0R': new Card('💣', 'red' , HIGHCOST, CARDWIN,  0, 'S'), //bomb
+  'test_0B': new Card('💣', 'blue', LOWCOST , CARDWIN,  0, 'I'),
 };
 
 // initial trial - get name and age
@@ -165,13 +190,11 @@ var instructions = {
 	
     "<div>Some cards cost " + LOWCOST + " point" +
 	// TODO: correct order!?
-	threecardhtml([CARDS['p11_1S'], CARDS['empty'], CARDS['p11_1I']],
-                      [null, null, null])+
+	LAYOUT.html([CARDS['p11_1S'], CARDS['p11_1I']], [null, null, null])+
     "</div>",
 
-    "<div>This cards cost " + HIGHCOST + ' points' +
-	threecardhtml([CARDS['empty'], CARDS['p11_1H'], CARDS['empty']],
-                      [null, null, null])+
+    "<div>This card cost " + HIGHCOST + ' points' +
+	LAYOUT.html([CARDS['p11_1H']], [null, null, null])+
     "</div>",
 
     // NB. maybe don't put total wins (20200421BL)
@@ -284,26 +307,15 @@ function rt_progress(){
    window.requestAnimationFrame(step);
 }
 
-function threecardhtml(carray, keyarray, small) {
-    return('<div class="threecards">'+
-           carray[0].html('left'  , keyarray[0], small)+
-           carray[1].html('center', keyarray[1], small)+
-           carray[2].html('right' , keyarray[2], small)+
-           '</div>')
-}
-
 function mktrial_fixloc(c1, c2) {
     c1c=CARDS[c1];
     c2c=CARDS[c2];
     // 20200420 fixed positions based on symbol
-    let pos1=SLOTORDER.indexOf(c1c.sym)
-    let pos2=SLOTORDER.indexOf(c2c.sym)
+    let pos1=LAYOUT.pos_of_sym(c1c.sym)
+    let pos2=LAYOUT.pos_of_sym(c2c.sym)
     let twocards=[c1, c2]; // for index of index later
-    let avail_keys = [SLOTKEYS[pos1], SLOTKEYS[pos2]];
-    disp = [CARDS['empty'], CARDS['empty'], CARDS['empty']];
-    disp[pos1] = c1c;
-    disp[pos2] = c2c;
-    let stim = threecardhtml(disp, SLOTKEYS);
+    let stim = LAYOUT.html([c1c,c2c]);
+    let avail_keys = LAYOUT.keys_for_cards([c1c,c2c])['cards'];
     let trialdur = RTMAX===0?null:RTMAX;
 
   return({
@@ -316,7 +328,8 @@ function mktrial_fixloc(c1, c2) {
     (USERTBAR?"<div class='rtbar' style='background-color:blue;height:20px;width:100%;'></div>":""),
     on_start: function(trial) {
       trial.prompt += '<p>You have ' + totalPoints() + ' points</p>' +
-        (DEBUG?("<span class='debug'>" + c1 + " or " + c2 +"</span>"):"")
+        (DEBUG?("<span class='debug'>" + c1 + " or " + c2 +
+		"keys: " + avail_keys.join(" or ") + "</span>"):"")
     },
     on_load: function(trial) {
       // start the rt bar counting down after 300 ms
@@ -326,8 +339,9 @@ function mktrial_fixloc(c1, c2) {
     on_finish: function(data){
 
       if(DEBUG) {
-	  console.log(c1, pos1, c2, pos2, avail_keys,
-                      data.key_press, twocards);
+	  console.log('keys:',avail_keys,
+		      'pushed:', data.key_press,
+                      'idx', avail_keys.indexOf(data.key_press));
       }
       if(data.key_press === null) {
           picked = 'empty';
@@ -342,7 +356,7 @@ function mktrial_fixloc(c1, c2) {
           picked = twocards[idx_picked];
           ignored = twocards[idx_ignored];
 	  // what side did we pick
-	  data.side_idx = SLOTORDER.indexOf(CARDS[picked].sym)
+	  data.side_idx = LAYOUT.pos_of_sym(CARDS[picked].sym)
       }
       
       // score
@@ -430,13 +444,9 @@ function mkfbk() {
       
       // make small cards all white. replace one of empties with picked
       if(prev.side_idx===null) {
-	  disp = "Respond faster to win points!";
-	  console.log('is null', prev.side_idx)
+	  disp = "<div onclick='simkey("+SPACE_KEY+")'>Respond faster to win points!</div>";
       } else {
-          cdisp = [CARDS['empty'], CARDS['empty'], CARDS['empty']] 
-          side = ['left','center','right'][prev.side_idx];
-          cdisp[prev.side_idx] = card;
-	  disp = threecardhtml(cdisp, [onclick, onclick, onclick], 1);
+	  disp = LAYOUT.html([card], [SPACE_KEY, SPACE_KEY, SPACE_KEY], 'small');
       }
 
       // 20200421 - when no rtpen not in feedback, no need for this

@@ -3,9 +3,10 @@
 //          probability, payout, color, symbol
 // GLOBALS: ALLOWTOUCH and DEBUG
 class Card {
-   constructor(sym,  color, cost, pays, p){
+   constructor(sym, color, cost, pays, p, type){
       this.sym = sym; this.color=color; this.cost=cost;
       this.pays=pays; this.p=p;
+      this.type = type; // (I)nitial, (S)econd, (H)igh
    }
    html(side, charcode, small) {
      // nonbreaking space to preserve alignment
