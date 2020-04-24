@@ -37,6 +37,7 @@ const RTPEN = 0; // 20200421 - disable RT penalty
 const MAXCNTDUR=250 //ms
 const MAXRT=2000 // ms - time to zero points from slow RT
 const RTPENSTART=300 // when to start the penilty progress bar
+const SCOREANIMATEDUR=500 //ms to allow the bar to run
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -50,6 +51,11 @@ const DOWN_KEY = 40;
 const RIGHT_KEY = 39;   
 const SPACE_KEY = 32; //progress feedback
 const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
+
+// div id="scorebar" for a progress bar
+// must be run after onload!
+let SCOREBAR = null
+if(document) { $(document).ready(function(){SCOREBAR = new ScoreBar('#scorebar', INITPOINTS);})}
 
 class Sym {
     constructor(sym, color, val, order) {
@@ -97,15 +103,18 @@ class ThreePositions {
 	// showcards is an array of cards to show
 	// card should have 'type' property
 	var carray = [CARDS['empty'], CARDS['empty'], CARDS['empty']];
+	var classes = [small, small, small];
 	for(var c of showcards){
 	    let i = this.pos_at_type(c.type)
 	    carray[i] = c;
+	    //only one to show means we are doing feedback
+	    if(showcards.length===1){classes[i]+=" chosen";}
         }
 	var keyarray = keyinit===undefined?this.keys_for_cards(showcards)['keys']:keyinit
 	return('<div class="threecards">'+
-	    carray[0].html('left'  , keyarray[0], small)+
-	    carray[1].html('center', keyarray[1], small)+
-	    carray[2].html('right' , keyarray[2], small)+
+	    carray[0].html('left'  , keyarray[0], classes[0])+
+	    carray[1].html('center', keyarray[1], classes[1])+
+	    carray[2].html('right' , keyarray[2], classes[2])+
 	    '</div>')
     }
 }
@@ -307,6 +316,7 @@ function rt_progress(){
    window.requestAnimationFrame(step);
 }
 
+
 function mktrial_fixloc(c1, c2) {
     c1c=CARDS[c1];
     c2c=CARDS[c2];
@@ -321,6 +331,7 @@ function mktrial_fixloc(c1, c2) {
   return({
     type: 'html-keyboard-response',
     stimulus: stim,
+    post_trial_gap: SCOREANIMATEDUR,
     choices: avail_keys,
     trial_duration: trialdur,
     //TODO: use only the available options?
@@ -365,6 +376,9 @@ function mktrial_fixloc(c1, c2) {
       data.rtpen  = calc_rtpen(data.rt, data.win, data.cost);
       data.score  = data.win - data.cost - data.rtpen;
 
+      // animate cost of card
+      SCOREBAR.animate(-1*data.cost)
+
       /* data we want to have for later */
       data.picked = picked;
       data.ignored = ignored;
@@ -396,6 +410,7 @@ function mktrial(l, r) {
       if(USERTBAR) { setTimeout(rt_progress, RTPENSTART)}
     },
     on_finish: function(data){
+
       // which card was chosen?
       if(data.key_press==LEFT_KEY){picked=l; ignored=r;}
       else                        {picked=r; ignored=l;}
@@ -411,6 +426,8 @@ function mktrial(l, r) {
       data.sym   = CARDS[picked].sym;
       data.picked = picked;
       data.ignored = ignored;
+
+      //SCOREBAR.animate(-1*data.cost)
     },
    left: l, right: r
 })}
@@ -471,6 +488,8 @@ function mkfbk() {
        if(net>0) { countWin(net) }
        // remove any coins we may have paid
        if(net>=0) {coin_poof(prev.cost)}
+       // animate scorebar
+       if(net>0) { SCOREBAR.animate(prev.win - prev.rtpen - prev.cost) }
        // save data every feedback if we have uniqueID from psiturk
        if(typeof uniqueId !== 'undefined'){
           psiturk.saveData({ success: function() {if(DEBUG){console.log('saved to psiturk!')}}});

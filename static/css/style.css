@@ -46,6 +46,23 @@ body {
 /* audit */
 .debug {background-color: orange;}
 
+/* ScoreBar */
+#jsp { width: 90%; }
+.scorebar-container {
+  display: block;
+  float: left;
+  width: 30px;
+  height: 300px;
+  margin: 10px;
+}
+#scorebar {
+   background-color: green;
+   bottom: 0;
+   position: fixed;
+   top: 90%;
+   margin-bottom: 10px;
+   width: 40px;
+}
 
 
 /* text styling */

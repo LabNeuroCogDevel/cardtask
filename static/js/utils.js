@@ -8,7 +8,7 @@ class Card {
       this.pays=pays; this.p=p;
       this.type = type; // (I)nitial, (S)econd, (H)igh
    }
-   html(side, charcode, small) {
+   html(side, charcode, extra) {
      // nonbreaking space to preserve alignment
      let sym = this.sym==""?"&nbsp;":this.sym;
      let cost= this.cost!=0?("-"+this.cost):"&nbsp;";
@@ -16,8 +16,7 @@ class Card {
          "":
          (" onclick='simkey("+charcode+")'")
 
-     let smallclass = (small === undefined)?"":"small";
-     let classes =  ['card', this.color, side, smallclass].join(" ");
+     let classes =  ['card', this.color, side, extra].join(" ");
      return('<div class="card-container" id="card-' + this.sym +'">' +
 	    (DEBUG?("<p class='debug'>"+this.p+"</p>"):"") +
             '<div class="'+ classes  + '" '+
@@ -40,6 +39,31 @@ class Card {
       $('#card-' +this.sym).fadeTo(100, .1)
   }
 };
+
+class ScoreBar {
+    /*
+     * keep track of the score
+     * should reach top expodentially
+     */
+    constructor(id, h) {
+	this.obj = $(id)
+	this.total = 20
+    }
+    after_inc(inc){
+	return(inc/this.max)
+    }
+    animate(inc){
+	// increasing height extends the bottom
+        // but we want to extend the top
+	// so we'll modify 'top'- 0% is very top
+        // 100% is very bottom
+	const newp = inc/10
+	this.total += newp
+        this.obj.css("background-color", (inc>0?"green":"red"));
+	this.obj.animate({top: (100-this.total) + "%"}, SCOREANIMATEDUR);
+	console.log('animate',100-this.total);
+    }
+}
 
 function simkey(key) {
   // for charcode see e.g. "a".charCodeAt(0) 
