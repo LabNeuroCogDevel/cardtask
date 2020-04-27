@@ -261,7 +261,7 @@ var instructions = {
 function countWin(net) {
    // initial from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
    let startTimestamp = null;
-   let obj = $('.net');
+   let obj = $('.feedback.net>span');
    const duration = (net/CARDWIN)*MAXCNTDUR;
    const g = 128; // green value
    const c = 4; // exp scale coef
@@ -274,7 +274,7 @@ function countWin(net) {
       // exp(2*(colors/MAX))/exp(2)  == 0.1353353 0.3011942 0.6703200 0.9607894
       const c_points =  Math.floor(cval)
       obj.html("+" + c_points);
-      obj.css("background-color", "rgb(0," + g_color + ",0)");
+      obj.parent().css("background-color", "rgb(0," + g_color + ",0)");
       if (progress < 1) {
          window.requestAnimationFrame(step);
       }
@@ -507,7 +507,7 @@ function mkfbk() {
           "<p class='feedback total'> Your total score is <span>&nbsp;</span></p>" +
           "<p class='feedback cost'> - " + prev.cost + " for the card</p>"+
           "<p class='hide2 feedback "+ wincolor +"'> + " + prev.win + " from the card</p>"+
-          "<p class='hide1 feedback net "+ wincolor +"'> " + prev.score + "</p>"+
+          "<p class='hide1 feedback net "+ wincolor +"'><span>-1</span> new points!</p>"+
           //"<p class='feedback total'>Total: " + totalPoints() + "</p>" +
           "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
