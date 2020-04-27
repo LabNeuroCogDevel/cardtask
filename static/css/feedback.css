@@ -18,15 +18,12 @@
     display: flex;
     margin-top: -100px;
     /*margin-left: -100px;*/
-    width: 100px;
 }
 .nowin-card.chosen::after {
-    content: '💣';
+    content: url('../images/wrong.png');
     position: absolute;
     display: flex;
     margin-top: -100px;
-    margin-left: -25px;
-    width: 10px;
 }
 /* hide badge until we remove hide1 */
 .nowin-card.chosen.hide1::after, .small.chosen.hide1::after {
