@@ -34,7 +34,7 @@ const HIGHCOST = 10;
 const RTMAX = 2000; //ms. how long to wait before auto-progressing. 0 = off
 const RTPEN = 0; // 20200421 - disable RT penalty
 // animation
-const MAXCNTDUR=250 //ms
+const MAXCNTDUR=400 //ms
 const MAXRT=2000 // ms - time to zero points from slow RT
 const RTPENSTART=300 // when to start the penilty progress bar
 const SCOREANIMATEDUR=0 // 0 = disabled, otherwise ITI after response to animate score (500)
@@ -282,6 +282,22 @@ function countWin(net) {
    window.requestAnimationFrame(step);
    return(obj)
 }
+function counter(obj, prefix, start, end, duration) {
+   let startTimestamp = null;
+   const net = end-start;
+   const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const cval = Math.floor(start + progress*net)
+      obj.html(prefix + cval);
+      if (progress < 1) {
+         window.requestAnimationFrame(step);
+      }
+   };
+   window.requestAnimationFrame(step);
+   return(obj)
+}
+
 function pictureRep(n, red) {
    // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
    // https://www.pngitem.com/middle/boxhh_cartoon-transparent-background-gold-coin-hd-png-download/
@@ -488,21 +504,29 @@ function mkfbk() {
       */
       return(
           disp +
-          "<p class='feedback cost'> Cost" + prev.cost + "</p>"+
-          "<p class='hide1 feedback net "+ wincolor +"'>" + prev.score + "</p>"+
-          "<p class='feedback'>Total: " + totalPoints() + "</p>" +
+          "<p class='feedback total'> Your total score is <span>&nbsp;</span></p>" +
+          "<p class='feedback cost'> - " + prev.cost + " for the card</p>"+
+          "<p class='hide2 feedback "+ wincolor +"'> + " + prev.win + " from the card</p>"+
+          "<p class='hide1 feedback net "+ wincolor +"'> " + prev.score + "</p>"+
+          //"<p class='feedback total'>Total: " + totalPoints() + "</p>" +
           "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
    }, on_load: function(trial) {
-       let prev=jsPsych.data.get().last(1).values()[0]
-       let net = prev.score
+       let prev=jsPsych.data.get().last(1).values()[0];
+       let net = prev.score;
+       let total = totalPoints();
+       let prevtotal = total - net;
+       let totalcost = prevtotal - prev.cost;
        // count up if we have more than 0 points to count
-       if(net>0) {
-	   setTimeout(function(){
-            countWin(net);
+       counter($('.feedback.total>span'), '', prevtotal, totalcost, MAXCNTDUR)
+       setTimeout(function(){
             $('.hide1').removeClass('hide1');
-           }, 300);
-       }
+	    if(net>0) {
+                $('.hide2').removeClass('hide2');
+		countWin(net);
+		counter($('.feedback.total>span'), '', totalcost, total, MAXCNTDUR)
+	    }
+           }, MAXCNTDUR);
 
        // remove any coins we may have paid
        // 20200427 - disable coins
