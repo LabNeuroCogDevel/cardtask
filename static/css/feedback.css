@@ -12,14 +12,35 @@
 
 .card.small { font-size: 40px; min-height: 100px; }
    
-.chosen::after {
-    content: "";
-    background: url('../images/stars.png');
-    /* TODO: FIXME */
+.small.chosen::after {
+    content: url('../images/star.png');
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index:-1;
+    display: flex;
+    margin-top: -100px;
+    /*margin-left: -100px;*/
+    width: 100px;
 }
+.nowin-card.chosen::after {
+    content: '💣';
+    position: absolute;
+    display: flex;
+    margin-top: -100px;
+    margin-left: -25px;
+    width: 10px;
+}
+/* hide badge until we remove hide1 */
+.nowin-card.chosen.hide1::after, .small.chosen.hide1::after {
+    content: "";
+}
+
+.feedback.hide1, .feedback.hide2 {
+  visibility: hidden;
+}
+
+/*
+.chosen::after {
+    content: url('../images/star.png');
+    position: absolute;
+    z-index: -1;
+}
+*/

@@ -20,7 +20,7 @@ const CARDFREQ = [.6, .4];  // low/high pair, any/red //20200421 inc 40% from 20
 // only the first 3 are used. Maybe shuffled later
 const SYMOPTS = ['✿', '❖', '✢', '⚶', '⚙', '✾'];
 const COLOROPTS = ['green', 'blue','red','yellow', 'orange']
-const DEBUG = 1; // change 1=>0
+const DEBUG = 0; // change 1=>0
 const USERTBAR = 0; // 20200420 - RT progress bar is too stressful
 const USERANDOM =0; // 20200422 - random but not toggled yet
 
@@ -37,7 +37,7 @@ const RTPEN = 0; // 20200421 - disable RT penalty
 const MAXCNTDUR=250 //ms
 const MAXRT=2000 // ms - time to zero points from slow RT
 const RTPENSTART=300 // when to start the penilty progress bar
-const SCOREANIMATEDUR=500 //ms to allow the bar to run
+const SCOREANIMATEDUR=0 // 0 = disabled, otherwise ITI after response to animate score (500)
 
 // 20200410 - feedback no longer autoadvances
 // xxx TODO: make feedback faster after a few trials
@@ -53,9 +53,13 @@ const SPACE_KEY = 32; //progress feedback
 const SLOTKEYS = [LEFT_KEY, DOWN_KEY, RIGHT_KEY];
 
 // div id="scorebar" for a progress bar
-// must be run after onload!
+// must be run after page is loaded
 let SCOREBAR = null
-if(document) { $(document).ready(function(){SCOREBAR = new ScoreBar('#scorebar', INITPOINTS);})}
+if(document && SCOREANIMATEDUR>0) {
+    $(document).ready(function(){
+	$('body').append('<div class="scorebar-container"><div id="scorebar"> </div></div>');
+	SCOREBAR = new ScoreBar('#scorebar', INITPOINTS);
+})}
 
 class Sym {
     constructor(sym, color, val, order) {
@@ -276,6 +280,7 @@ function countWin(net) {
       }
    };
    window.requestAnimationFrame(step);
+   return(obj)
 }
 function pictureRep(n, red) {
    // https://www.behance.net/gallery/3885279/Elf-Defense-2D-Game-concept-art
@@ -377,7 +382,9 @@ function mktrial_fixloc(c1, c2) {
       data.score  = data.win - data.cost - data.rtpen;
 
       // animate cost of card
-      SCOREBAR.animate(-1*data.cost)
+      if(SCOREANIMATEDUR > 0) {
+	SCOREBAR.animate(-1*data.cost, SCOREANIMATEDUR)
+      }
 
       /* data we want to have for later */
       data.picked = picked;
@@ -463,7 +470,8 @@ function mkfbk() {
       if(prev.side_idx===null) {
 	  disp = "<div onclick='simkey("+SPACE_KEY+")'>Respond faster to win points!</div>";
       } else {
-	  disp = LAYOUT.html([card], [SPACE_KEY, SPACE_KEY, SPACE_KEY], 'small');
+	  let fbkclasses='small hide1 ' + wincolor+'-card';
+	  disp = LAYOUT.html([card], [SPACE_KEY, SPACE_KEY, SPACE_KEY], fbkclasses);
       }
 
       // 20200421 - when no rtpen not in feedback, no need for this
@@ -472,12 +480,16 @@ function mkfbk() {
       } else {
        slowmsg = ""
       }*/
-      return(
-          disp +
+      // 20200427 - remove wallet/coin animation
+      /*
           "<div class='wallet'>" +
             pictureRep(prev.win-prev.rtpen, prev.cost) +
           "</div>"+
-          "<p class='feedback net "+ wincolor +"'>" + prev.score + "</p>"+
+      */
+      return(
+          disp +
+          "<p class='feedback cost'> Cost" + prev.cost + "</p>"+
+          "<p class='hide1 feedback net "+ wincolor +"'>" + prev.score + "</p>"+
           "<p class='feedback'>Total: " + totalPoints() + "</p>" +
           "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
@@ -485,11 +497,21 @@ function mkfbk() {
        let prev=jsPsych.data.get().last(1).values()[0]
        let net = prev.score
        // count up if we have more than 0 points to count
-       if(net>0) { countWin(net) }
+       if(net>0) {
+	   setTimeout(function(){
+            countWin(net);
+            $('.hide1').removeClass('hide1');
+           }, 300);
+       }
+
        // remove any coins we may have paid
-       if(net>=0) {coin_poof(prev.cost)}
-       // animate scorebar
-       if(net>0) { SCOREBAR.animate(prev.win - prev.rtpen - prev.cost) }
+       // 20200427 - disable coins
+       //   if(net>=0) {coin_poof(prev.cost)}
+
+       // animate scorebar (disabled 20200427)
+       if(net>0 && SCOREANIMATEDUR) {
+          SCOREBAR.animate(prev.win - prev.rtpen - prev.cost, SCOREANIMATEDUR)
+       }
        // save data every feedback if we have uniqueID from psiturk
        if(typeof uniqueId !== 'undefined'){
           psiturk.saveData({ success: function() {if(DEBUG){console.log('saved to psiturk!')}}});

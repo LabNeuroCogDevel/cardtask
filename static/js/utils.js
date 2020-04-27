@@ -52,7 +52,7 @@ class ScoreBar {
     after_inc(inc){
 	return(inc/this.max)
     }
-    animate(inc){
+    animate(inc, dur){
 	// increasing height extends the bottom
         // but we want to extend the top
 	// so we'll modify 'top'- 0% is very top
@@ -60,7 +60,7 @@ class ScoreBar {
 	const newp = inc/10
 	this.total += newp
         this.obj.css("background-color", (inc>0?"green":"red"));
-	this.obj.animate({top: (100-this.total) + "%"}, SCOREANIMATEDUR);
+	this.obj.animate({top: (100-this.total) + "%"}, dur);
 	console.log('animate',100-this.total);
     }
 }
