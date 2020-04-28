@@ -217,6 +217,7 @@ var instructions = {
       "<font size=larger>→</font> for right<br>"+
     "If your card wins, you get as many as " + CARDWIN + " points!",
 
+    /*
     "<div>When a card gives you points<br>" +
     "you'll see the cost of the card taken out of your winnings<div>" +
     pictureRep(5,0) + "</div>",
@@ -234,9 +235,11 @@ var instructions = {
 
     "<div>A lone X-ed coin means you lost a point!<br>" +
     pictureRep(0,1) + "</div>",
+    */
 
     "Your goal is to learn which cards give rewards most often<br>" +
-    "so that you can get as many points as possible.",
+    "so that you can get as many points as possible.<br>"+
+    "Remember, not all cards have the same cost",
 
     "Go as fast as you can!<br>"+
     "If you take too long you won't win anything!",
@@ -285,6 +288,10 @@ function countWin(net) {
 function counter(obj, prefix, start, end, duration) {
    let startTimestamp = null;
    const net = end-start;
+   /*
+   if(net<0) { obj.css({'background-color': 'red'})}
+   if(net>0) { obj.css({'background-color': 'green'})}
+   */
    const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
@@ -481,10 +488,12 @@ function mkfbk() {
       let msg=(prev.win > 0)?("+"+prev.win):"0";
       let wincolor=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
+      var coststring = "- " + prev.cost + " for the card";
       
       // make small cards all white. replace one of empties with picked
       if(prev.side_idx===null) {
 	  disp = "<div onclick='simkey("+SPACE_KEY+")'>Respond faster to win points!</div>";
+          var coststring = "- " + prev.cost + ": too slow";
       } else {
 	  let fbkclasses='small hide1 ' + wincolor+'-card';
 	  disp = LAYOUT.html([card], [SPACE_KEY, SPACE_KEY, SPACE_KEY], fbkclasses);
@@ -504,11 +513,10 @@ function mkfbk() {
       */
       return(
           disp +
-          "<p class='feedback total'> Your total score is <span>&nbsp;</span></p>" +
-          "<p class='feedback cost'> - " + prev.cost + " for the card</p>"+
+          "<p class='feedback cost'> " + coststring + "</p>"+
           "<p class='hide2 feedback "+ wincolor +"'> + " + prev.win + " from the card</p>"+
           "<p class='hide1 feedback net "+ wincolor +"'><span>-1</span> new points!</p>"+
-          //"<p class='feedback total'>Total: " + totalPoints() + "</p>" +
+          "<p class='feedback total'> Your total score is <span>&nbsp;</span></p>" +
           "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
       )
    }, on_load: function(trial) {
@@ -518,7 +526,7 @@ function mkfbk() {
        let prevtotal = total - net;
        let totalcost = prevtotal - prev.cost;
        // count up if we have more than 0 points to count
-       counter($('.feedback.total>span'), '', prevtotal, totalcost, MAXCNTDUR)
+       counter($('.feedback.total>span'), '', prevtotal, totalcost, MAXCNTDUR - 100)
        setTimeout(function(){
             $('.hide1').removeClass('hide1');
 	    if(net>0) {

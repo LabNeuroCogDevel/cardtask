@@ -157,8 +157,8 @@ function dummy(c){
 	 data.side_idx = 1;
       }})}
 function fulltrial() {
-   t = mktrial_fixloc("p11_1I", "p11_1H")
-   t2 = mktrial_fixloc("p11_1I", "p11_1S")
+   t = mktrial_fixloc("p28_2S", "p11_1H")
+   t2 = mktrial_fixloc("p11_1I", "p28_2S")
    jsPsych.init({timeline: [t, feedback, t2, feedback], display_element: jsp,
                  on_finish: function() {fulltrial()}
                 });

@@ -1,29 +1,33 @@
 /* feedback */
+.feedback {}
+
+/*
 .feedback {padding: 5px; font-size: smaller}
 .win { border: solid green 5px;}
 .nowin { border: solid black 5px;}
+.cost { border: solid black 5px;}
+*/
+.feedback.total { font-size: smaller; }
+.feedback.total>span { padding: 5px;}
 .net {  font-size: larger; padding: 10px;}
 .net.win {background-color: green; color:white;}
 .net.nowin {background-color: red; color:white;}
 .sym { font-size: 60px; padding: 20px;}
 /*.cost { background-color: #ff0000; color:white;}*/
-.cost { border: solid black 5px;}
 .wallet { padding-bottom: 20px; }
 
 .card.small { font-size: 40px; min-height: 100px; }
    
+/* firefox/chrome difference. firefox margin is half used? */
 .small.chosen::after {
     content: url('../images/star.png');
     position: absolute;
-    display: flex;
-    margin-top: -100px;
-    /*margin-left: -100px;*/
+    margin-top: -50px;
 }
 .nowin-card.chosen::after {
     content: url('../images/wrong.png');
     position: absolute;
-    display: flex;
-    margin-top: -100px;
+    margin-top: -50px;
 }
 /* hide badge until we remove hide1 */
 .nowin-card.chosen.hide1::after, .small.chosen.hide1::after {
