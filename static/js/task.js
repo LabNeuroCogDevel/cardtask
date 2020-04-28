@@ -10,7 +10,7 @@
  *
  */
 // starting value should be > 100, the most expensive card
-const TASKVER = '20200421.2-feedback';
+const TASKVER = '20200428.1-star+2xfdbk';
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
