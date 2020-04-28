@@ -10,7 +10,7 @@
  *
  */
 // starting value should be > 100, the most expensive card
-const TASKVER = '20200428.1-star+2xfdbk';
+const TASKVER = '20200428.2-survey';
 const INITPOINTS=200;
 // make block
 const BLOCKLEN = 40;
@@ -121,6 +121,11 @@ class ThreePositions {
 	    carray[2].html('right' , keyarray[2], classes[2])+
 	    '</div>')
     }
+   symdisp(t) {
+       return('<i style="border-radius: 10%; border: 1px solid black; color: white;"' +
+              ' class="' + this[t].color + '">'+
+            this[t].sym + '</i>');
+   }
 }
 
 const LAYOUT = new ThreePositions(SYMOPTS, COLOROPTS, [LOWCOST, LOWCOST, HIGHCOST]);
@@ -182,12 +187,29 @@ var get_info = {
 var final_thoughts = {
   type: 'survey-multi-choice',
   questions: [
-    {prompt: "The cost of ❖ changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
-    {prompt: "How often ❖ gave a reward changed ", options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
-    {prompt: "The left card was ", options: ["always better", "always worse", "neither"],  name: "sidethoughts"}, 
-    {prompt: "<span color=red>✢</span> was the best choice ", options: ["always", "often", "rarely", "never"],  name: "redthoughts"}, 
-    {prompt: "I choose wrong by going too fast", options: ["often", "rarely", "never"],  name: "speed"}, 
-  ]
+    {prompt: "I choose wrong by going too fast",
+     options: ["often", "rarely", "never"],  name: "speed"}, 
+    {prompt: "The cost of " + LAYOUT.symdisp('I') + " changed ",
+     options: ["0 times", "1-3 time(s)", "4+ times"],  name: "vchange"}, 
+    {prompt: "How often " + LAYOUT.symdisp('I')  + " gave a reward (reward rate) changed ",
+     options: ["0 times", "1-3 time(s)", "4+ times"],  name: "pchange"}, 
+    {prompt: "Previous choices",
+     options: ["influced payout of future choices",
+	       "had no effect on future payouts"],  name: "timethoughts"}, 
+    {prompt: "The best choice ",
+     options: ["changed throughout",
+               "always " + LAYOUT['H'].sym,
+               "always " + LAYOUT['I'].sym,
+               "always " + LAYOUT['S'].sym,
+               "never " +  LAYOUT['H'].sym,
+               "never " +  LAYOUT['I'].sym,
+               "never " +  LAYOUT['S'].sym ],  name: "bestcard"}, 
+  ],
+ on_finish: function(data) {
+    if(typeof uniqueId !== 'undefined'){
+	psiturk.saveData({ success: function() {if(DEBUG){console.log('saved to psiturk!')}}});
+    }
+ }
 };
 
 // instruction slides
@@ -239,7 +261,7 @@ var instructions = {
 
     "Your goal is to learn which cards give rewards most often<br>" +
     "so that you can get as many points as possible.<br>"+
-    "Remember, not all cards have the same cost",
+    "Remember, not all cards have the same cost.",
 
     "Go as fast as you can!<br>"+
     "If you take too long you won't win anything!",
