@@ -159,7 +159,7 @@ function dummy(c){
 function fulltrial() {
    t = mktrial_fixloc("p28_2S", "p11_1H")
    t2 = mktrial_fixloc("p11_1I", "p28_2S")
-   jsPsych.init({timeline: [t, feedback, t2, feedback], display_element: jsp,
+   jsPsych.init({timeline: [t, feedback1, feedback2, t2,feedback1, feedback2], display_element: jsp,
                  on_finish: function() {fulltrial()}
                 });
 }
@@ -176,7 +176,7 @@ function survey(){
 function mkfeedback(c) {
    dummycard=dummy(c)
    // push fake data and run feedback slide with given card
-   jsPsych.init({timeline: [dummycard, feedback], display_element: jsp});
+   jsPsych.init({timeline: [dummycard, feedback1, feedback2], display_element: jsp});
 }
 
 // play with feedback

@@ -261,16 +261,14 @@ var instructions = {
 
 /* feedback animation functions
 */
-function countWin(net) {
+function countWin(net, dur) {
    // initial from https://stackoverflow.com/questions/16994662/count-animation-from-number-a-to-b
    let startTimestamp = null;
    let obj = $('.feedback.net>span');
-   const duration = (net/CARDWIN)*MAXCNTDUR;
+   const duration = dur===undefined?((net/CARDWIN)*MAXCNTDUR):dur;
    const g = 128; // green value
    const c = 4; // exp scale coef
-   const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+   const animate = (progress) => {
       const cval = progress*net
       const g_color = Math.floor(g * Math.exp(c*cval/CARDWIN)/Math.exp(c))
       //  colors                     == 0 20 40 49
@@ -278,11 +276,21 @@ function countWin(net) {
       const c_points =  Math.floor(cval)
       obj.html("+" + c_points);
       obj.parent().css("background-color", "rgb(0," + g_color + ",0)");
-      if (progress < 1) {
-         window.requestAnimationFrame(step);
-      }
    };
-   window.requestAnimationFrame(step);
+   const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      animate(progress);
+      if (progress >= 1){return;}
+      window.requestAnimationFrame(step);
+   };
+
+   // sometimes we just want to set the color
+   if(duration === 0) {
+       animate(1); 
+   } else {
+       window.requestAnimationFrame(step);
+   }
    return(obj)
 }
 function counter(obj, prefix, start, end, duration) {
@@ -477,14 +485,22 @@ function calc_rtpen(rt, win, cost) {
 // feedback trial informs player of their choice
 // use function to make b/c we might want to 
 // change proprties of one but not all (index.html in github pages)
-function mkfbk() { 
+function mkfbk(fbk_num) { 
    let onclick=ALLOWTOUCH?SPACE_KEY:null;
+   let keychoices = fbk_num==1?jsPsych.NO_KEYS:[SPACE_KEY];
+   let trldur = fbk_num==1?(2*MAXCNTDUR):null;
    return({
     type: 'html-keyboard-response',
+    // 20200410 - no autoadvance
+    //choices: jsPsych.NO_KEYS,
+    //trial_duration: FEEDBACKDUR,
     // 20200413 - updated to use coins and animation
+    // 20200428 - two versions first with no response, second with resp
+    choices: keychoices,
+    trial_duration: trldur,
     stimulus: function(trial){
       // setup win vs nowin feedback color and message
-      let prev=jsPsych.data.get().last(1).values()[0];
+      let prev=jsPsych.data.get().last(fbk_num).values()[0];
       let msg=(prev.win > 0)?("+"+prev.win):"0";
       let wincolor=(prev.win > 0)?"win":"nowin";
       let card = CARDS[prev.picked];
@@ -516,18 +532,20 @@ function mkfbk() {
           "<p class='feedback cost'> " + coststring + "</p>"+
           "<p class='hide2 feedback "+ wincolor +"'> + " + prev.win + " from the card</p>"+
           "<p class='hide1 feedback net "+ wincolor +"'><span>-1</span> new points!</p>"+
-          "<p class='feedback total'> Your total score is <span>&nbsp;</span></p>" +
-          "<p class='feedback'><br><b>Push the space bar to see the next pair</b></p>"
+          "<p class='feedback total'> Your total score is <span>" + totalPoints() + "</span></p>" +
+          (fbk_num>1?"<p class='feedback'><br><b>Push the space for the next pair</b></p>":"")
       )
    }, on_load: function(trial) {
-       let prev=jsPsych.data.get().last(1).values()[0];
+       console.log('on feedback', fbk_num, keychoices,trldur)
+       let prev=jsPsych.data.get().last(fbk_num).values()[0];
        let net = prev.score;
        let total = totalPoints();
        let prevtotal = total - net;
        let totalcost = prevtotal - prev.cost;
        // count up if we have more than 0 points to count
-       counter($('.feedback.total>span'), '', prevtotal, totalcost, MAXCNTDUR - 100)
-       setTimeout(function(){
+       if(fbk_num==1) {
+         counter($('.feedback.total>span'), '', prevtotal, totalcost, Math.max(0,MAXCNTDUR-100))
+         setTimeout(function(){
             $('.hide1').removeClass('hide1');
 	    if(net>0) {
                 $('.hide2').removeClass('hide2');
@@ -535,24 +553,28 @@ function mkfbk() {
 		counter($('.feedback.total>span'), '', totalcost, total, MAXCNTDUR)
 	    }
            }, MAXCNTDUR);
+       } else {
+	   $('.feedback.total>span').html(total);
+	   $('.hide1').removeClass('hide1');
+	   if(net>0){
+	      $('.hide2').removeClass('hide2');
+              countWin(net, 0)
+           };
+       }
 
        // remove any coins we may have paid
        // 20200427 - disable coins
        //   if(net>=0) {coin_poof(prev.cost)}
 
        // animate scorebar (disabled 20200427)
-       if(net>0 && SCOREANIMATEDUR) {
+       if(net>0 && SCOREANIMATEDUR && fbk_num == 1) {
           SCOREBAR.animate(prev.win - prev.rtpen - prev.cost, SCOREANIMATEDUR)
        }
        // save data every feedback if we have uniqueID from psiturk
-       if(typeof uniqueId !== 'undefined'){
+       if(typeof uniqueId !== 'undefined' && fbk_num == 1){
           psiturk.saveData({ success: function() {if(DEBUG){console.log('saved to psiturk!')}}});
        }
    },
-    // 20200410 - no autoadvance
-    choices: [SPACE_KEY],
-    //choices: jsPsych.NO_KEYS,
-    //trial_duration: FEEDBACKDUR,
 })}
 
 function coin_poof(n){
@@ -562,7 +584,8 @@ function coin_poof(n){
     }, 250)
 }
 
-var feedback= mkfbk()
+var feedback1= mkfbk(1);
+var feedback2= mkfbk(2);
 var debrief={
     type: 'html-keyboard-response',
     stimulus: function(trial){
@@ -637,7 +660,7 @@ trials=[p26, p62, p26, p62, p11].
 if(DEBUG){console.log('left cards:', trials.map((x)=> x.left))}
 
 // add feedback after each trial
-trials = trials.flatMap((k) => [k, feedback]);
+trials = trials.flatMap((k) => [k, feedback1, feedback2]);
 
 var timeline = [get_info, instructions, trials, final_thoughts, debrief].flat()
 
